@@ -1,8 +1,8 @@
-const TikiServices = require("../services/tiki.services");
+const ShopeeServices = require("../services/shopee.services");
 const statusCodes = require("../errors/statusCodes");
 
 const getDiscountCodesByCategoryFromEcommerce = async (req, res) => {
-    const { error, discountCodes } = await TikiServices.getDiscountCodesByCategoryFromEcommerce(req);
+    const { error, discountCodes } = await ShopeeServices.getDiscountCodesByCategoryFromEcommerce(req);
     if (error) {
         return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
     }
@@ -10,5 +10,5 @@ const getDiscountCodesByCategoryFromEcommerce = async (req, res) => {
 };
 
 module.exports = {
-    getDiscountCodesByCategoryFromEcommerce,
+    getDiscountCodesByCategoryFromEcommerce
 };

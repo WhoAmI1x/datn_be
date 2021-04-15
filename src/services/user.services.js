@@ -6,7 +6,7 @@ const getUserInfo = async ({ _id, email }) => {
     try {
         const user = await User.findById(_id);
 
-        console.log(user);
+        // console.log(user);
 
         return { user };
     } catch (e) {

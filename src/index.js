@@ -13,7 +13,9 @@ const app = express();
 const port = process.env.PORT || 4398;
 
 const UsersRouter = require("./routers/user.router");
+const CategoryRouter = require("./routers/category.router");
 const TikiRouter = require("./routers/tiki.router");
+const ShopeeRouter = require("./routers/shopee.router");
 
 app.use(express.static(path.join(__dirname, "./assets")));
 app.use(cors());
@@ -23,7 +25,9 @@ app.use(camelcase());
 app.use(removeEmptyProperties());
 app.get("/", (req, res) => res.send("Welcome to my hunting sale and coupon!"));
 app.use("/users", UsersRouter);
+app.use("/category", CategoryRouter);
 app.use("/tiki", TikiRouter);
+app.use("/shopee", ShopeeRouter);
 app.use(errorHandler());
 
 app.listen(port, () => {

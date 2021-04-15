@@ -26,11 +26,15 @@ const userSchema = new Schema({
     discountCodeIds: [{ type: Schema.Types.ObjectId, ref: 'DiscountCode' }],
     tikiAccount: {
         username: { type: String },
-        password: { type: String }
+        password: { type: String },
+        auth: {
+            token: { type: String }
+        }
     },
     shopeeAccount: {
         username: { type: String },
-        password: { type: String }
+        password: { type: String },
+        auth: { type: String }
     },
     tokens: [
         {
