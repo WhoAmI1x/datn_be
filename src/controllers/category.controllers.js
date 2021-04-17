@@ -1,16 +1,16 @@
 const CategoryServices = require("../services/category.services");
 const statusCodes = require("../errors/statusCodes");
 
-const createDiscountCodeCategory = async (req, res) => {
-    const { error, category } = await CategoryServices.createDiscountCodeCategory(req);
+const createCategory = async (req, res) => {
+    const { error, category } = await CategoryServices.createCategory(req);
     if (error) {
         return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
     }
     res.status(statusCodes.OK).send({ category });
 };
 
-const getDiscountCodeCategories = async (req, res) => {
-    const { error, categories } = await CategoryServices.getDiscountCodeCategories(req);
+const getCategories = async (req, res) => {
+    const { error, categories } = await CategoryServices.getCategories(req);
     if (error) {
         return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
     }
@@ -26,7 +26,7 @@ const getDiscountCodesByCategory = async (req, res) => {
 };
 
 module.exports = {
-    createDiscountCodeCategory,
-    getDiscountCodeCategories,
+    createCategory,
+    getCategories,
     getDiscountCodesByCategory
 };

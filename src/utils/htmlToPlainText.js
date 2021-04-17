@@ -1,12 +1,22 @@
-
 const htmlToPlainText = html => html.replace(/<style([\s\S]*?)<\/style>/gi, '')
     .replace(/<script([\s\S]*?)<\/script>/gi, '')
     .replace(/<\/div>/ig, '\n')
+    .replace(/<h1>/ig, '\n')
+    .replace(/<h2>/ig, '\n')
+    .replace(/<h3>/ig, '\n')
+    .replace(/<h4>/ig, '\n')
+    .replace(/<h5>/ig, '\n')
+    .replace(/<\/h1>/ig, '\n')
+    .replace(/<\/h2>/ig, '\n')
+    .replace(/<\/h3>/ig, '\n')
+    .replace(/<\/h4>/ig, '\n')
+    .replace(/<\/h5>/ig, '\n')
     .replace(/<\/li>/ig, '\n')
     .replace(/<li>/ig, '  *  ')
     .replace(/<\/ul>/ig, '\n')
     .replace(/<\/p>/ig, '\n')
     .replace(/<br\s*[\/]?>/gi, "\n")
+    .replace(/&gt;|&lt;/g, '')
     .replace(/<[^>]+>/ig, '');
 
-export default htmlToPlainText;
+module.exports = htmlToPlainText;

@@ -1,7 +1,7 @@
 const Category = require("../models/Category");
 const DiscountCode = require("../models/DiscountCode");
 
-const createDiscountCodeCategory = async ({ file, body: { ecommerce, name, type, mainId, detectField, detectValue } }) => {
+const createCategory = async ({ file, body: { ecommerce, name, type, mainId, detectField, detectValue } }) => {
     try {
         const imageUrl = file.destination.replace("./src/assets", "") + `/${file.filename}`;
 
@@ -15,7 +15,7 @@ const createDiscountCodeCategory = async ({ file, body: { ecommerce, name, type,
     }
 };
 
-const getDiscountCodeCategories = async ({ query: { ecommerce, type } }) => {
+const getCategories = async ({ query: { ecommerce, type } }) => {
     try {
         const categories = await Category.find({ ecommerce, type });
 
@@ -40,7 +40,7 @@ const getDiscountCodesByCategory = async ({ query: { categoryId } }) => {
 };
 
 module.exports = {
-    createDiscountCodeCategory,
-    getDiscountCodeCategories,
+    createCategory,
+    getCategories,
     getDiscountCodesByCategory
 };

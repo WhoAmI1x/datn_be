@@ -1,7 +1,8 @@
 const axios = require("axios");
 const {
     shopeeGetShopIdBaseApiUrl,
-    shopeeDiscountCodeBaseApiUrl
+    shopeeDiscountCodeBaseApiUrl,
+    shopeeProductSaleBaseApiUrl
 } = require("../../utils/constants");
 
 const getShopIds = async (categoryId) => {
@@ -47,6 +48,17 @@ const getDiscountCodeByShopIdAndCategory = async (categoryId) => {
     return discountCodesOfShops;
 };
 
+const getFlashSaleProductSchedules = async () => {
+    const res = await axios({
+        method: "GET",
+        url: `${shopeeProductSaleBaseApiUrl}/get_all_sessions`,
+
+    });
+
+    console.log(res.data);
+};
+
 module.exports = {
-    getDiscountCodeByShopIdAndCategory
+    getDiscountCodeByShopIdAndCategory,
+    getFlashSaleProductSchedules
 };
