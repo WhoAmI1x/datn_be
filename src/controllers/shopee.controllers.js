@@ -10,14 +10,32 @@ const getDiscountCodesByCategoryFromEcommerce = async (req, res) => {
 };
 
 const getFlashSaleProductSchedulesFromEcommerce = async (req, res) => {
-    const { error, schedules } = await ShopeeServices.getTodaySaleProductSchedulesFromEcommerce();
+    const { error, schedules } = await ShopeeServices.getFlashSaleProductSchedulesFromEcommerce();
     if (error) {
         return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
     }
     res.status(statusCodes.OK).send({ schedules });
 };
 
+const getAllFlashSaleProductBriefFromEcommerce = async (req, res) => {
+    const { error, allFlashSaleProductBrief } = await ShopeeServices.getAllFlashSaleProductBriefFromEcommerce();
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ allFlashSaleProductBrief });
+};
+
+const getAllFlashSaleProductByCategoryFromEcommerce = async (req, res) => {
+    const { error, products, message } = await ShopeeServices.getAllFlashSaleProductByCategoryFromEcommerce(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ products, message });
+};
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
-    getFlashSaleProductSchedulesFromEcommerce
+    getFlashSaleProductSchedulesFromEcommerce,
+    getAllFlashSaleProductBriefFromEcommerce,
+    getAllFlashSaleProductByCategoryFromEcommerce
 };

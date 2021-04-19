@@ -1,4 +1,5 @@
 const axios = require("axios");
+const randomString = require("../../utils/randomString");
 const {
     shopeeGetShopIdBaseApiUrl,
     shopeeDiscountCodeBaseApiUrl,
@@ -52,13 +53,55 @@ const getFlashSaleProductSchedules = async () => {
     const res = await axios({
         method: "GET",
         url: `${shopeeProductSaleBaseApiUrl}/get_all_sessions`,
-
     });
 
-    console.log(res.data);
+    return res.data && res.data.data && res.data.data.sessions;
+};
+
+const getAllFlashSaleProductBrief = async ({ promotionid }) => {
+    const res = await axios({
+        method: "GET",
+        url: `${shopeeProductSaleBaseApiUrl}/get_all_itemids`,
+        params: {
+            need_personalize: true,
+            sort_soldout: true,
+            promotionid: promotionid
+        }
+    });
+
+    return res.data && res.data.data && res.data.data.item_brief_list;
+};
+
+const getAllFlashSaleProductByCategoryAndTime = async ({ categoryid, promotionid, limit, itemids }) => {
+    const csrftoken = randomString(32);
+
+    const res = await axios({
+        method: "POST",
+        url: `${shopeeProductSaleBaseApiUrl}/flash_sale_batch_get_items`,
+        headers: {
+            "x-csrftoken": `${csrftoken}`,
+            referer: `https://shopee.vn/flash_sale?categoryId=${categoryid}`,
+            cookie: `csrftoken=${csrftoken};`
+        },
+        data: {
+            need_personalize: true,
+            sort_soldout: true,
+            with_dp_items: true,
+            categoryid,
+            promotionid,
+            limit,
+            itemids
+        }
+    });
+
+    console.log("res.data: ", res.data);
+
+    return res.data && res.data.data && res.data.data.items || [];
 };
 
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
-    getFlashSaleProductSchedules
+    getFlashSaleProductSchedules,
+    getAllFlashSaleProductBrief,
+    getAllFlashSaleProductByCategoryAndTime
 };

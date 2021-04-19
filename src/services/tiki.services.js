@@ -66,6 +66,7 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
 
 const getTodaySaleProductSchedulesFromEcommerce = async () => {
     try {
+        await Schedule.remove({ ecommerce: "TIKI" });
         const schedules = await getTodaySaleProductSchedules();
 
         if (!schedules) {
@@ -91,6 +92,7 @@ const getTodaySaleProductSchedulesFromEcommerce = async () => {
 
 const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
     try {
+        // await Product.remove({});
         const category = await Category.findOne({ _id: categoryId });
 
         if (!category) {

@@ -35,7 +35,19 @@ const getDiscountCodeShopeeDescription = dc => {
     return description;
 };
 
+const getProductUrl = (name, shopid, itemid) => {
+    return `[${name} i.${shopid}.${itemid}`.replace(/[[]/ig, "-")
+        .replace(/]/ig, "-")
+        .replace(/ /ig, "-")
+        .replace(/%/ig, "")
+        .replace(/,/ig, "-")
+        .replace(/----/ig, "-")
+        .replace(/---/ig, "-")
+        .replace(/--/ig, "-");
+}
+
 module.exports = {
     getDiscountCodeShopeeTitle,
-    getDiscountCodeShopeeDescription
+    getDiscountCodeShopeeDescription,
+    getProductUrl
 };
