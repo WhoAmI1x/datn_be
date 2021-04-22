@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
-const { getProductDetailFromEcommerce } = require("./tiki.services")
+const TikiServices = require("./tiki.services");
+const ShopeeServices = require("./shopee.services");
 
 const getDetailProduct = async ({ query: { productId } }) => {
     try {
@@ -13,10 +14,12 @@ const getDetailProduct = async ({ query: { productId } }) => {
 
         if (category.ecommerce === "TIKI") {
             if (productFullInfo.productDetail.length <= 0) {
-                productFullInfo = await getProductDetailFromEcommerce(productFullInfo);
+                productFullInfo = await TikiServices.getProductDetailFromEcommerce(productFullInfo);
             }
         } else {
-            return { error: "Shopee is not complete!" };
+            if (productFullInfo.shopeeModels.length <= 0) {
+                productFullInfo = await ShopeeServices.getProductDetailFromEcommerce(productFullInfo);
+            }
         }
 
         return { productFullInfo };
