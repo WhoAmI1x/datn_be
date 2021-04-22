@@ -1,9 +1,11 @@
 const axios = require("axios");
 const randomString = require("../../utils/randomString");
+const md5 = require("md5");
 const {
     shopeeGetShopIdBaseApiUrl,
     shopeeDiscountCodeBaseApiUrl,
-    shopeeProductSaleBaseApiUrl
+    shopeeProductSaleBaseApiUrl,
+    shopeeProductDetailBaseApiUrl
 } = require("../../utils/constants");
 
 const getShopIds = async (categoryId) => {
@@ -80,28 +82,44 @@ const getAllFlashSaleProductByCategoryAndTime = async ({ categoryid, promotionid
         url: `${shopeeProductSaleBaseApiUrl}/flash_sale_batch_get_items`,
         headers: {
             "x-csrftoken": `${csrftoken}`,
-            referer: `https://shopee.vn/flash_sale?categoryId=${categoryid}`,
+            referer: `https://shopee.vn/flash_sale?categoryId=${categoryid}&promotionId=${promotionid}`,
             cookie: `csrftoken=${csrftoken};`
         },
         data: {
             need_personalize: true,
             sort_soldout: true,
             with_dp_items: true,
-            categoryid,
-            promotionid,
-            limit,
+            categoryid: Number(categoryid),
+            promotionid: Number(promotionid),
+            limit: Number(limit),
             itemids
         }
     });
 
-    console.log("res.data: ", res.data);
-
     return res.data && res.data.data && res.data.data.items || [];
+};
+
+const getProductsDetail = async ({ itemid, shopid }) => {
+    const res = await axios({
+        method: "GET",
+        url: `${shopeeProductDetailBaseApiUrl}`,
+        headers: {
+            "if-none-match-": md5(`55b03${md5(`itemid=${itemid}&shopid=${shopid}`)}55b03`),
+            "user-agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36`,
+        },
+        params: {
+            itemid,
+            shopid
+        }
+    });
+
+    return res.data && res.data.item;
 };
 
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
     getFlashSaleProductSchedules,
     getAllFlashSaleProductBrief,
-    getAllFlashSaleProductByCategoryAndTime
+    getAllFlashSaleProductByCategoryAndTime,
+    getProductsDetail
 };

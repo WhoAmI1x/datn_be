@@ -13,7 +13,8 @@ const {
     getDiscountCodeByShopIdAndCategory,
     getFlashSaleProductSchedules,
     getAllFlashSaleProductBrief,
-    getAllFlashSaleProductByCategoryAndTime
+    getAllFlashSaleProductByCategoryAndTime,
+    getProductsDetail
 } = require("../apis/shopee");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
@@ -105,6 +106,7 @@ const getAllFlashSaleProductBriefFromEcommerce = async () => {
             mainId: pB.itemid
         }));
 
+        await ProductBrief.remove({});
         await ProductBrief.insertMany(allFlashSaleProductBriefToSaveDb);
 
         return { allFlashSaleProductBrief: allFlashSaleProductBriefToSaveDb };
@@ -134,38 +136,19 @@ const getAllFlashSaleProductByCategoryFromEcommerce = async ({ query: { category
             }
         }
 
-        const allBriefProductByCategoryAndSchedule = await ProductBrief.find({ saleCategoryId: category.mainId });
+        const allBriefProductByCategoryAndSchedule = await ProductBrief.find({ saleCategoryId: category.detectValue });
 
-        // products = await getAllFlashSaleProductByCategoryAndTime({
-        //     categoryid: category.mainId,
-        //     promotionid: activeSchedule.detectValue,
-        //     limit: allBriefProductByCategoryAndSchedule.length,
-        //     itemids: allBriefProductByCategoryAndSchedule.map(({ mainId }) => mainId)
-        // });
         products = await getAllFlashSaleProductByCategoryAndTime({
-            categoryid: 12,
-            promotionid: 2012688153,
-            limit: 12,
-            itemids: [
-                4465694174,
-                1868031942,
-                5472772047,
-                6555726679,
-                1189528148,
-                3656293234,
-                3567058934,
-                9622758077,
-                5154102119,
-                6957493232,
-                6083761196,
-                8430765940
-            ]
+            categoryid: category.detectValue,
+            promotionid: activeSchedule.detectValue,
+            limit: allBriefProductByCategoryAndSchedule.length,
+            itemids: allBriefProductByCategoryAndSchedule.map(({ mainId }) => mainId)
         });
 
         if (products.length > 0) {
             const productsFullInfoToSaveDb = products.map(pFInfo => ({
                 mainId: pFInfo.itemid,
-                imageUrls: pFInfo.image,
+                imageUrls: `${shopeeImageUrl}/${pFInfo.image}`,
                 name: pFInfo.promo_name,
                 price: pFInfo.price / 100000,
                 priceBeforeDiscount: pFInfo.price_before_discount / 100000,
@@ -192,9 +175,35 @@ const getAllFlashSaleProductByCategoryFromEcommerce = async ({ query: { category
     }
 };
 
+const getProductDetailFromEcommerce = async ({ _id, mainId, shopeeShopId }) => {
+    try {
+        const productFullInfoFromEcommerce = await getProductsDetail({ itemid: mainId, shopid: shopeeShopId });
+        const productFullInfo = await Product.findOneAndUpdate(
+            { _id },
+            {
+                $set: {
+                    productDetail: productFullInfoFromEcommerce.attributes.map(({ name, value }) => ({ name, value })),
+                    productDescription: productFullInfoFromEcommerce.description,
+                    rateAverage: productFullInfoFromEcommerce.item_rating.rating_star,
+                    priceMax: productFullInfoFromEcommerce.price_max / 100000,
+                    priceMin: productFullInfoFromEcommerce.price_min / 100000,
+                    priceMaxBeforeDiscount: productFullInfoFromEcommerce.price_max_before_discount / 100000,
+                    priceMinBeforeDiscount: productFullInfoFromEcommerce.price_min_before_discount / 100000,
+                    shopeeModels: productFullInfoFromEcommerce.models.map(({ name, modelid }) => ({ name, modelid }))
+                }
+            },
+            { new: true });
+
+        return productFullInfo;
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
     getAllFlashSaleProductBriefFromEcommerce,
-    getAllFlashSaleProductByCategoryFromEcommerce
+    getAllFlashSaleProductByCategoryFromEcommerce,
+    getProductDetailFromEcommerce
 };

@@ -43,7 +43,8 @@ const getProductUrl = (name, shopid, itemid) => {
         .replace(/,/ig, "-")
         .replace(/----/ig, "-")
         .replace(/---/ig, "-")
-        .replace(/--/ig, "-");
+        .replace(/--/ig, "-")
+        .replace(/\//ig, "-");
 }
 
 module.exports = {
