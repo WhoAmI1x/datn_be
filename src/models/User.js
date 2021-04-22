@@ -53,6 +53,10 @@ userSchema.methods.toJSON = function () {
     delete userObject.password;
     delete userObject.tokens;
 
+    if (user.role === "ADMIN") {
+        delete userObject.discountCodeIds;
+    }
+
     return userObject;
 }
 

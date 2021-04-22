@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 app.use(camelcase());
 app.use(removeEmptyProperties());
 app.get("/", (req, res) => res.send("Welcome to my hunting sale and coupon!"));
-app.use("/users", UsersRouter);
+app.use("/user", UsersRouter);
 app.use("/category", CategoryRouter);
 app.use("/product", ProductRouter);
 app.use("/tiki", TikiRouter);

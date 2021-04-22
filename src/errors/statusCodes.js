@@ -5,4 +5,5 @@ module.exports = {
   UNAUTHORIZED: 401,
   OK: 200,
   CREATED: 201,
+  FORBIDDEN: 403
 };
