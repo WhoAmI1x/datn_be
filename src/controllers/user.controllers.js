@@ -10,11 +10,43 @@ const registerAdminAccount = async (req, res) => {
 };
 
 const loginWithAdminRole = async (req, res) => {
-    const { error, user } = await UserServices.loginWithAdminRole(req.user);
+    const { error, user, token } = await UserServices.loginWithAdminRole(req.body);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ user, token });
+};
+
+const getUserInfo = async (req, res) => {
+    const { error, user } = await UserServices.getUserInfo(req.user);
     if (error) {
         return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
     }
     res.status(statusCodes.OK).send({ user });
+};
+
+const logout = async (req, res) => {
+    const { error, message } = await UserServices.logout(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ message });
+};
+
+const getAllUser = async (req, res) => {
+    const { error, allUser } = await UserServices.getAllUser(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ allUser });
+};
+
+const deleteUser = async (req, res) => {
+    const { error, allUser } = await UserServices.deleteUser(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ allUser });
 };
 
 const loginWithUserRole = async (req, res) => {
@@ -28,5 +60,9 @@ const loginWithUserRole = async (req, res) => {
 module.exports = {
     registerAdminAccount,
     loginWithAdminRole,
-    loginWithUserRole
+    getUserInfo,
+    logout,
+    getAllUser,
+    deleteUser,
+    loginWithUserRole,
 };

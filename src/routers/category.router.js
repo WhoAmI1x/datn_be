@@ -11,6 +11,10 @@ router.post("/create-category", uploadCategoryImage.single("image"), asyncWrap(C
 
 router.get("/get-categories", asyncWrap(CategoryControllers.getCategories));
 
+router.delete("/delete-category", asyncWrap(CategoryControllers.deleteCategory));
+
+router.patch("/update-category", uploadCategoryImage.single("image"), asyncWrap(CategoryControllers.updateCategory));
+
 router.get("/get-discount-codes-by-category", asyncWrap(CategoryControllers.getDiscountCodesByCategory));
 
 module.exports = router;

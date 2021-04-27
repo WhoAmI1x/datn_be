@@ -20,7 +20,6 @@ const categorySchema = new Schema({
     },
     detectField: {
         type: String,
-        required: true
     },
     detectValue: {
         type: String,

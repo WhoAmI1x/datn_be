@@ -8,10 +8,18 @@ const router = express.Router();
 const { storageAvatarImage } = require("../utils/uploadImages");
 const uploadAvatarImage = multer({ storage: storageAvatarImage });
 
-router.post("/register-admin-account", uploadAvatarImage.single("avatar"), asyncWrap(UserControllers.registerAdminAccount));
+router.post("/register-admin-account", asyncWrap(UserControllers.registerAdminAccount));
 
-router.post("/login-with-admin-role", auth, asyncWrap(UserControllers.loginWithAdminRole));
+router.post("/login-with-admin-role", asyncWrap(UserControllers.loginWithAdminRole));
 
-router.post("/login-with-user-role", auth, asyncWrap(UserControllers.loginWithUserRole));
+router.get("/get-user-info", auth, asyncWrap(UserControllers.getUserInfo));
+
+router.get("/logout", auth, asyncWrap(UserControllers.logout));
+
+router.get("/get-all-user", auth, asyncWrap(UserControllers.getAllUser));
+
+router.delete("/delete-user", auth, asyncWrap(UserControllers.deleteUser));
+
+router.post("/login-with-user-role", asyncWrap(UserControllers.loginWithUserRole));
 
 module.exports = router;

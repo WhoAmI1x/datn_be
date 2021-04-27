@@ -8,22 +8,69 @@ const createCategory = async ({ file, body: { ecommerce, name, type, mainId, det
         const newCategory = new Category({ ecommerce, type, name, imageUrl, mainId, detectField, detectValue });
 
         await newCategory.save();
-
-        return { category: newCategory };
+        const categories = await Category.find({});
+        return { categories };
     } catch (e) {
         return { error: e };
     }
 };
 
-const getCategories = async ({ query: { ecommerce, type } }) => {
+const getCategories = async ({ query: { ecommerce, type, keyword } }) => {
     try {
-        const categories = await Category.find({ ecommerce, type });
+        let filter = {};
+
+        if (ecommerce) {
+            filter = Object.assign(filter, { ecommerce });
+        }
+        if (type) {
+            filter = Object.assign(filter, { type });
+        }
+        if (keyword) {
+            filter = Object.assign(filter, { name: { "$regex": keyword, "$options": "i" } })
+        }
+
+        const categories = await Category.find(filter);
 
         if (categories.length <= 0) {
-            return { categories: "Categories empty!" };
+            return { categories: [] };
         }
 
         return { categories };
+    } catch (e) {
+        return { error: e };
+    }
+};
+
+const deleteCategory = async ({ query: { categoryId } }) => {
+    try {
+        const categoryDeleted = await Category.remove({ _id: categoryId });
+
+        if (categoryDeleted.deletedCount === 1) {
+            const categories = await Category.find({});
+            return { categories };
+        }
+
+        return { error: "Delete category failed!" };
+    } catch (e) {
+        return { error: e };
+    }
+};
+
+const updateCategory = async ({ file, body, query: { categoryId } }) => {
+    try {
+        if (file) {
+            const imageUrl = file.destination.replace("./src/assets", "") + `/${file.filename}`;
+            body = Object.assign(body, { imageUrl });
+        }
+
+        const categoryUpdated = await Category.findOneAndUpdate({ _id: categoryId }, { $set: body }, { rawResult: true });
+
+        if (categoryUpdated.ok === 1) {
+            const categories = await Category.find({});
+            return { categories };
+        }
+
+        return { error: "Update category failed!" };
     } catch (e) {
         return { error: e };
     }
@@ -42,5 +89,7 @@ const getDiscountCodesByCategory = async ({ query: { categoryId } }) => {
 module.exports = {
     createCategory,
     getCategories,
+    deleteCategory,
+    updateCategory,
     getDiscountCodesByCategory
 };
