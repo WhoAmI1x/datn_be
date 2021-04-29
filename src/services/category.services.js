@@ -1,11 +1,16 @@
 const Category = require("../models/Category");
 const DiscountCode = require("../models/DiscountCode");
 
-const createCategory = async ({ file, body: { ecommerce, name, type, mainId, detectField, detectValue } }) => {
+const createCategory = async ({ file, body }) => {
     try {
-        const imageUrl = file.destination.replace("./src/assets", "") + `/${file.filename}`;
+        if (file) {
+            const imageUrl = file.destination.replace("./src/assets", "") + `/${file.filename}`;
+            body = Object.assign(body, { imageUrl });
+        }
 
-        const newCategory = new Category({ ecommerce, type, name, imageUrl, mainId, detectField, detectValue });
+        Object.keys(body).forEach(key => body[key] === 'undefined' && delete body[key]);
+
+        const newCategory = new Category(body);
 
         await newCategory.save();
         const categories = await Category.find({});
