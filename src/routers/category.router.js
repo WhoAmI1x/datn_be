@@ -16,6 +16,4 @@ router.delete("/delete-category", auth, asyncWrap(CategoryControllers.deleteCate
 
 router.patch("/update-category", auth, uploadCategoryImage.single("image"), asyncWrap(CategoryControllers.updateCategory));
 
-router.get("/get-discount-codes-by-category", auth, asyncWrap(CategoryControllers.getDiscountCodesByCategory));
-
 module.exports = router;

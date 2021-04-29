@@ -14,6 +14,7 @@ const port = process.env.PORT || 4398;
 
 const UsersRouter = require("./routers/user.router");
 const CategoryRouter = require("./routers/category.router");
+const DiscountCodeRouter = require("./routers/discountCode.router");
 const ProductRouter = require("./routers/product.router");
 const TikiRouter = require("./routers/tiki.router");
 const ShopeeRouter = require("./routers/shopee.router");
@@ -27,6 +28,7 @@ app.use(removeEmptyProperties());
 app.get("/", (req, res) => res.send("Welcome to my hunting sale and coupon!"));
 app.use("/user", UsersRouter);
 app.use("/category", CategoryRouter);
+app.use("/discount-code", DiscountCodeRouter);
 app.use("/product", ProductRouter);
 app.use("/tiki", TikiRouter);
 app.use("/shopee", ShopeeRouter);

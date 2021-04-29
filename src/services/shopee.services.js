@@ -43,7 +43,7 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
 
             await DiscountCode.insertMany(discountCodesToSaveToDb);
 
-            return { discountCodes };
+            return { discountCodes: discountCodesToSaveToDb };
         }
         else {
             return { error: `Discount codes for this category '${category.name}' is empty!` }

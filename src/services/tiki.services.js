@@ -22,11 +22,11 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
 
         let discountCodes = null;
 
-        // Mã chớp nhoáng | Giành cho khách hàng mới
+        // Mã chớp nhoáng | Giành cho khách hàng mới | Ưu đãi từ đối tác
         if (category.detectField === "id") {
             const url = await getDiscountCodeApiUrlFromBrowser({ key: category.detectField, value: category.detectValue });
             if (!url) {
-                return { error: `Discount codes of ${category.name} not found!` };
+                return { error: `Url get discount codes of ${category.name} not found!` };
             }
 
             discountCodes = await getDiscountCodeWithDetectFieldId(url);
@@ -53,9 +53,10 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
                 categoryId: category._id,
             }));
 
+            await DiscountCode.remove({ categoryId });
             await DiscountCode.insertMany(discountCodesToSaveToDb);
 
-            return { discountCodes };
+            return { discountCodes: discountCodesToSaveToDb };
         } else {
             return { discountCodes: [], message: `Discount codes for this category '${category.name}' is empty!` }
         }

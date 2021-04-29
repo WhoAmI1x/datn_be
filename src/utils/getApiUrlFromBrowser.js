@@ -29,7 +29,10 @@ const getDiscountCodeApiUrlFromBrowser = async ({ key, value }) => {
     let result = null;
 
     page.on("request", async request => {
-        if (request.url().includes(`${key}=${value}`)) {
+        if (!!value && request.url().includes(`${key}=${value}`)) {
+            result = request.url();
+        }
+        if (!value && request.url().includes(`&${key}=`) && !result) {
             result = request.url();
         }
     })

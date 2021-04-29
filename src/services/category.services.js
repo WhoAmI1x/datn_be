@@ -63,6 +63,8 @@ const updateCategory = async ({ file, body, query: { categoryId } }) => {
             body = Object.assign(body, { imageUrl });
         }
 
+        Object.keys(body).forEach(key => body[key] === 'undefined' && delete body[key]);
+
         const categoryUpdated = await Category.findOneAndUpdate({ _id: categoryId }, { $set: body }, { rawResult: true });
 
         if (categoryUpdated.ok === 1) {
@@ -76,20 +78,9 @@ const updateCategory = async ({ file, body, query: { categoryId } }) => {
     }
 };
 
-const getDiscountCodesByCategory = async ({ query: { categoryId } }) => {
-    try {
-        const discountCodes = await DiscountCode.find({ categoryId });
-
-        return { discountCodes };
-    } catch (e) {
-        return { error: e };
-    }
-};
-
 module.exports = {
     createCategory,
     getCategories,
     deleteCategory,
     updateCategory,
-    getDiscountCodesByCategory
 };
