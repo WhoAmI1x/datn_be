@@ -16,6 +16,7 @@ const UsersRouter = require("./routers/user.router");
 const CategoryRouter = require("./routers/category.router");
 const DiscountCodeRouter = require("./routers/discountCode.router");
 const ProductRouter = require("./routers/product.router");
+const ScheduleRouter = require("./routers/schedule.router");
 const TikiRouter = require("./routers/tiki.router");
 const ShopeeRouter = require("./routers/shopee.router");
 
@@ -30,6 +31,7 @@ app.use("/user", UsersRouter);
 app.use("/category", CategoryRouter);
 app.use("/discount-code", DiscountCodeRouter);
 app.use("/product", ProductRouter);
+app.use("/schedule", ScheduleRouter);
 app.use("/tiki", TikiRouter);
 app.use("/shopee", ShopeeRouter);
 app.use(errorHandler());
