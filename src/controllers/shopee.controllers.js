@@ -17,16 +17,8 @@ const getFlashSaleProductSchedulesFromEcommerce = async (req, res) => {
     res.status(statusCodes.OK).send({ schedules });
 };
 
-const getAllFlashSaleProductBriefFromEcommerce = async (req, res) => {
-    const { error, allFlashSaleProductBrief } = await ShopeeServices.getAllFlashSaleProductBriefFromEcommerce();
-    if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
-    }
-    res.status(statusCodes.OK).send({ allFlashSaleProductBrief });
-};
-
-const getAllFlashSaleProductByCategoryFromEcommerce = async (req, res) => {
-    const { error, products, message } = await ShopeeServices.getAllFlashSaleProductByCategoryFromEcommerce(req);
+const getProductsByCategoryFromEcommerce = async (req, res) => {
+    const { error, products, message } = await ShopeeServices.getProductsByCategoryFromEcommerce(req);
     if (error) {
         return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
     }
@@ -36,6 +28,5 @@ const getAllFlashSaleProductByCategoryFromEcommerce = async (req, res) => {
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
-    getAllFlashSaleProductBriefFromEcommerce,
-    getAllFlashSaleProductByCategoryFromEcommerce
+    getProductsByCategoryFromEcommerce
 };

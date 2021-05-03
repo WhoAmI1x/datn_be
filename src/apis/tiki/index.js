@@ -46,6 +46,9 @@ const getProductsByCategoryAndTime = async ({ tag_id, time_id }) => {
     const res = await axios({
         method: "GET",
         url: `${tikiProductSaleBaseApiUrl}`,
+        headers: {
+            cookie: "_trackity=ea59ce1-eff6-8ed3-8606-abff92b0a1ac;"
+        },
         params: {
             page: 1,
             tag_id,
@@ -64,6 +67,9 @@ const getProductsByCategoryAndTime = async ({ tag_id, time_id }) => {
         .map(page => axios({
             method: "GET",
             url: `${tikiProductSaleBaseApiUrl}`,
+            headers: {
+                cookie: "_trackity=ea59ce1-eff6-8ed3-8606-abff92b0a1ac;"
+            },
             params: {
                 page,
                 tag_id,
@@ -113,6 +119,7 @@ const getProductsDetail = async ({ tikiMasterId, mainId }) => {
     return ({
         productDetail: [...productDetail, ...productDetailExtend],
         productDescription: htmlToPlainText(res.data.description),
+        images: [...res.data.images.map(({ base_url }) => base_url)]
     });
 };
 

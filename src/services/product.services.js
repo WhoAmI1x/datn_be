@@ -28,7 +28,17 @@ const getDetailProduct = async ({ query: { productId } }) => {
     }
 };
 
+const getProductsByCategory = async ({ query: { categoryId } }) => {
+    try {
+        const products = await Product.find({ categoryId, endTime: { $gt: Date.now() } });
+
+        return { products };
+    } catch (e) {
+        return { error: e };
+    }
+};
 
 module.exports = {
-    getDetailProduct
+    getDetailProduct,
+    getProductsByCategory
 };
