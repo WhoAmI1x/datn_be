@@ -93,7 +93,6 @@ const getTodaySaleProductSchedulesFromEcommerce = async () => {
 
 const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
     try {
-        // await Product.remove({});
         const category = await Category.findOne({ _id: categoryId });
 
         if (!category) {
@@ -117,7 +116,7 @@ const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => 
         if (products.length > 0) {
             const productsFullInfoToSaveDb = products.map(pFInfo => ({
                 mainId: pFInfo.product.id,
-                imageUrls: pFInfo.product.thumbnail_url,
+                imageUrls: [pFInfo.product.thumbnail_url],
                 name: pFInfo.product.name,
                 price: pFInfo.product.price,
                 priceBeforeDiscount: pFInfo.product.list_price,
@@ -133,9 +132,11 @@ const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => 
                 discountPercent: pFInfo.discount_percent,
             }));
 
+            await Product.remove({ categoryId });
             await Product.insertMany(productsFullInfoToSaveDb);
+            products = await Product.find({ categoryId });
 
-            return { products: productsFullInfoToSaveDb };
+            return { products };
         } else {
             return { products: [], message: `Products are empty!` };
         }
@@ -153,7 +154,8 @@ const getProductDetailFromEcommerce = async ({ _id, tikiMasterId, mainId }) => {
             {
                 $set: {
                     productDetail: productFullInfoFromEcommerce.productDetail,
-                    productDescription: productFullInfoFromEcommerce.productDescription
+                    productDescription: productFullInfoFromEcommerce.productDescription,
+                    imageUrls: productFullInfoFromEcommerce.images
                 }
             },
             { new: true });

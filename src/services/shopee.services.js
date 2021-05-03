@@ -73,6 +73,7 @@ const getFlashSaleProductSchedulesFromEcommerce = async () => {
         }));
 
         await Schedule.insertMany(schedulesSaveToDb);
+        await getAllFlashSaleProductBriefFromEcommerce(schedulesSaveToDb.find(({ isActive }) => isActive));
 
         return { schedules: schedulesSaveToDb };
     } catch (e) {
@@ -80,19 +81,9 @@ const getFlashSaleProductSchedulesFromEcommerce = async () => {
     }
 };
 
-const getAllFlashSaleProductBriefFromEcommerce = async () => {
+const getAllFlashSaleProductBriefFromEcommerce = async (scheduleActive) => {
     try {
-        let scheduleActive = await Schedule.findOne({ ecommerce: "SHOPEE", startTime: { $lt: Date.now() }, endTime: { $gt: Date.now() } });
         let allFlashSaleProductBrief = [];
-
-        if (!scheduleActive) {
-            await getFlashSaleProductSchedulesFromEcommerce();
-            scheduleActive = await Schedule.findOne({ ecommerce: "SHOPEE", startTime: { $lt: Date.now() }, endTime: { $gt: Date.now() } });
-
-            if (!activeSchedule) {
-                return { allFlashSaleProductBrief, message: "Products is empty!" };
-            }
-        }
 
         allFlashSaleProductBrief = await getAllFlashSaleProductBrief({ [scheduleActive.detectField]: scheduleActive.detectValue });
 
@@ -115,9 +106,8 @@ const getAllFlashSaleProductBriefFromEcommerce = async () => {
     }
 };
 
-const getAllFlashSaleProductByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
+const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
     try {
-        // await Product.remove({});
         const category = await Category.findOne({ _id: categoryId });
 
         if (!category) {
@@ -148,7 +138,7 @@ const getAllFlashSaleProductByCategoryFromEcommerce = async ({ query: { category
         if (products.length > 0) {
             const productsFullInfoToSaveDb = products.map(pFInfo => ({
                 mainId: pFInfo.itemid,
-                imageUrls: `${shopeeImageUrl}/${pFInfo.image}`,
+                imageUrls: [`${shopeeImageUrl}/${pFInfo.image}`],
                 name: pFInfo.promo_name,
                 price: pFInfo.price / 100000,
                 priceBeforeDiscount: pFInfo.price_before_discount / 100000,
@@ -163,9 +153,11 @@ const getAllFlashSaleProductByCategoryFromEcommerce = async ({ query: { category
                 shopeeShopId: pFInfo.shopid,
             }));
 
+            await Product.remove({ categoryId });
             await Product.insertMany(productsFullInfoToSaveDb);
+            products = await Product.find({ categoryId });
 
-            return { products: productsFullInfoToSaveDb };
+            return { products };
         } else {
             return { products: [], message: `Products are empty!` };
         }
@@ -189,7 +181,8 @@ const getProductDetailFromEcommerce = async ({ _id, mainId, shopeeShopId }) => {
                     priceMin: productFullInfoFromEcommerce.price_min / 100000,
                     priceMaxBeforeDiscount: productFullInfoFromEcommerce.price_max_before_discount / 100000,
                     priceMinBeforeDiscount: productFullInfoFromEcommerce.price_min_before_discount / 100000,
-                    shopeeModels: productFullInfoFromEcommerce.models.map(({ name, modelid }) => ({ name, modelid }))
+                    shopeeModels: productFullInfoFromEcommerce.models.map(({ name, modelid }) => ({ name, modelid })),
+                    imageUrls: [...productFullInfoFromEcommerce.images.map(image => `${shopeeImageUrl}/${image}`)]
                 }
             },
             { new: true });
@@ -203,7 +196,6 @@ const getProductDetailFromEcommerce = async ({ _id, mainId, shopeeShopId }) => {
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
-    getAllFlashSaleProductBriefFromEcommerce,
-    getAllFlashSaleProductByCategoryFromEcommerce,
+    getProductsByCategoryFromEcommerce,
     getProductDetailFromEcommerce
 };
