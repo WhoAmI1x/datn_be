@@ -8,4 +8,6 @@ router.get("/get-products-by-category", auth, asyncWrap(ProductControllers.getPr
 
 router.get("/get-product-detail", auth, asyncWrap(ProductControllers.getDetailProduct));
 
+router.delete("/delete-product", auth, asyncWrap(ProductControllers.deleteProduct));
+
 module.exports = router;

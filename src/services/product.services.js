@@ -38,7 +38,23 @@ const getProductsByCategory = async ({ query: { categoryId } }) => {
     }
 };
 
+const deleteProduct = async ({ query: { productId } }) => {
+    try {
+        const productDeleted = await Product.findOneAndDelete({ _id: productId });
+
+        if (productDeleted) {
+            const products = await Product.find({ categoryId: productDeleted.categoryId });
+            return { products };
+        }
+
+        return { error: "Delete product failed!" };
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDetailProduct,
-    getProductsByCategory
+    getProductsByCategory,
+    deleteProduct
 };

@@ -17,7 +17,16 @@ const getProductsByCategory = async (req, res) => {
     res.status(statusCodes.OK).send({ products });
 };
 
+const deleteProduct = async (req, res) => {
+    const { error, products } = await ProductServices.deleteProduct(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ products });
+};
+
 module.exports = {
     getDetailProduct,
-    getProductsByCategory
+    getProductsByCategory,
+    deleteProduct
 };
