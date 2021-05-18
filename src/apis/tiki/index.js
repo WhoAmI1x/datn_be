@@ -3,7 +3,7 @@ const htmlToPlainText = require("../../utils/htmlToPlainText");
 const {
     tikiDiscountCodeBaseApiUrl,
     tikiProductSaleBaseApiUrl,
-    tikiProductDetailBaseApiUrl
+    tikiSearchBaseApiUrl
 } = require("../../utils/constants");
 
 const getDiscountCodeWithDetectFieldId = async (url) => {
@@ -88,7 +88,7 @@ const getProductsByCategoryAndTime = async ({ tag_id, time_id }) => {
 const getProductsDetail = async ({ tikiMasterId, mainId }) => {
     const res = await axios({
         method: "GET",
-        url: `${tikiProductDetailBaseApiUrl}/${tikiMasterId}`,
+        url: `${tikiSearchBaseApiUrl}/${tikiMasterId}`,
         params: {
             platform: "web",
             spid: mainId,
@@ -119,7 +119,57 @@ const getProductsDetail = async ({ tikiMasterId, mainId }) => {
     return ({
         productDetail: [...productDetail, ...productDetailExtend],
         productDescription: htmlToPlainText(res.data.description),
-        images: [...res.data.images.map(({ base_url }) => base_url)]
+        images: [...res.data.images.map(({ base_url }) => base_url)],
+    });
+};
+
+const searchProductByKeyword = async (keyword) => {
+    const res = await axios({
+        method: "GET",
+        url: `${tikiSearchBaseApiUrl}`,
+        params: {
+            limit: "15",
+            page: 1,
+            q: keyword,
+        }
+    });
+
+    return res.data && res.data.data || [];
+};
+
+const getProductsDetailSearched = async ({ tikiMasterId }) => {
+    const res = await axios({
+        method: "GET",
+        url: `https://tiki.vn/api/v2/products/${tikiMasterId}?platform=web&spid=${tikiMasterId}&include=tag,images,gallery,promotions,badges,stock_item,variants,product_links,discount_tag,ranks,breadcrumbs,top_features,cta_desktop`,
+    });
+
+    let productDetail = [];
+    const specifications = res.data.specifications
+    if (specifications && specifications.length > 0) {
+        for (let i = 0; i < specifications.length; i++) {
+            const attributes = specifications[i].attributes.map(({ name, value }) => ({ name, value: htmlToPlainText(`${value}`) }));
+            productDetail = [...productDetail, ...attributes];
+        }
+    }
+
+    const configurable_options = res.data.configurable_options;
+    const configurable_products = res.data.configurable_products;
+    let productDetailExtend = [];
+
+    if (configurable_options && configurable_products) {
+        productDetailExtend = configurable_options.map(({ code, name }) => ({
+            name,
+            value: configurable_products.find(({ selected }) => selected)[code]
+        }));
+    }
+
+    return ({
+        productDetail: [...productDetail, ...productDetailExtend],
+        productDescription: htmlToPlainText(res.data.description),
+        images: [...res.data.images.map(({ base_url }) => base_url)],
+        rateAverage: res.data.rating_average,
+        quantitySold: res.data.quantity_sold && res.data.quantity_sold.value,
+        mainId: res.data.url_path.split("=")[1]
     });
 };
 
@@ -129,5 +179,7 @@ module.exports = {
     getDiscountCodeByCategory,
     getTodaySaleProductSchedules,
     getProductsByCategoryAndTime,
-    getProductsDetail
+    getProductsDetail,
+    searchProductByKeyword,
+    getProductsDetailSearched
 };

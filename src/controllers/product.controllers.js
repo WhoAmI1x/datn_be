@@ -25,8 +25,26 @@ const deleteProduct = async (req, res) => {
     res.status(statusCodes.OK).send({ products });
 };
 
+const searchProduct = async (req, res) => {
+    const { error, products } = await ProductServices.searchProduct(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ products });
+};
+
+const getDetailProductSearched = async (req, res) => {
+    const { error, productFullInfo } = await ProductServices.getDetailProductSearched(req);
+    if (error) {
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
+    res.status(statusCodes.OK).send({ productFullInfo });
+};
+
 module.exports = {
     getDetailProduct,
     getProductsByCategory,
-    deleteProduct
+    deleteProduct,
+    searchProduct,
+    getDetailProductSearched
 };

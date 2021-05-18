@@ -14,7 +14,8 @@ const {
     getFlashSaleProductSchedules,
     getAllFlashSaleProductBrief,
     getAllFlashSaleProductByCategoryAndTime,
-    getProductsDetail
+    getProductsDetail,
+    searchProductByKeyword
 } = require("../apis/shopee");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
@@ -193,9 +194,44 @@ const getProductDetailFromEcommerce = async ({ _id, mainId, shopeeShopId }) => {
     }
 };
 
+const searchProductByKeywordFromEcommerce = async (keyword) => {
+    try {
+        let products = await searchProductByKeyword(keyword);
+
+        if (products.length > 0) {
+            const markTime = Date.now();
+
+            const productsMapped = products.map(pMapped => ({
+                mainId: pMapped.itemid,
+                imageUrls: [`${shopeeImageUrl}/${pMapped.item_basic.image}`],
+                name: pMapped.item_basic.name,
+                price: pMapped.item_basic.price / 100000,
+                priceBeforeDiscount: pMapped.item_basic.price_before_discount / 100000,
+                productUrl: `https://shopee.vn/${getProductUrl(pMapped.item_basic.name, pMapped.shopid, pMapped.itemid)}`,
+                quantitySold: pMapped.item_basic.historical_sold,
+                quantity: pMapped.item_basic.stock,
+                quantityRemain: pMapped.item_basic.stock - pMapped.item_basic.sold,
+                discountPercent: pMapped.item_basic.show_discount,
+                shopeeShopId: pMapped.shopid,
+                ecommerce: "SHOPEE",
+                markTime
+            }));
+
+            await Product.insertMany(productsMapped);
+            products = await Product.find({ markTime });
+            return products;
+        } else {
+            return { products: [], message: `Danh sách trống!` };
+        }
+    } catch (e) {
+        return { error: e };
+    }
+}
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
     getProductsByCategoryFromEcommerce,
-    getProductDetailFromEcommerce
+    getProductDetailFromEcommerce,
+    searchProductByKeywordFromEcommerce
 };

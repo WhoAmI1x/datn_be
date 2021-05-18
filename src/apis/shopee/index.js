@@ -2,7 +2,7 @@ const axios = require("axios");
 const randomString = require("../../utils/randomString");
 const md5 = require("md5");
 const {
-    shopeeGetShopIdBaseApiUrl,
+    shopeeSearchBaseApiUrl,
     shopeeDiscountCodeBaseApiUrl,
     shopeeProductSaleBaseApiUrl,
     shopeeProductDetailBaseApiUrl
@@ -11,7 +11,7 @@ const {
 const getShopIds = async (categoryId) => {
     const response = await axios({
         method: "GET",
-        url: `${shopeeGetShopIdBaseApiUrl}`,
+        url: `${shopeeSearchBaseApiUrl}`,
         params: {
             by: "sales",
             limit: 50,
@@ -116,10 +116,46 @@ const getProductsDetail = async ({ itemid, shopid }) => {
     return res.data && res.data.item;
 };
 
+const searchProductByKeyword = async (keyword) => {
+    const res = await axios({
+        method: "GET",
+        url: `${shopeeSearchBaseApiUrl}`,
+        headers: {
+            authority: "shopee.vn",
+            "sec-ch-ua": `" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"`,
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            "if-none-match-": md5(`55b03${md5(`keyword=${keyword}`)}55b03`),
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36`,
+            "x-api-source": "pc",
+            "accept": "*/*",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            referer: `https://shopee.vn/search?keyword=${keyword}`,
+            "accept-language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5,de;q=0.4,ko;q=0.3,und;q=0.2,it;q=0.1,zh-CN;q=0.1,zh-TW;q=0.1,zh;q=0.1,ru;q=0.1,la;q=0.1,pt;q=0.1,pl;q=0.1,es;q=0.1,ja;q=0.1",
+        },
+        params: {
+            by: "relevancy",
+            limit: "15",
+            newest: 0,
+            order: "desc",
+            page_type: "search",
+            scenario: "PAGE_GLOBAL_SEARCH",
+            version: 2,
+            keyword,
+        }
+    });
+
+    return res.data && res.data.items || [];
+};
+
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
     getFlashSaleProductSchedules,
     getAllFlashSaleProductBrief,
     getAllFlashSaleProductByCategoryAndTime,
-    getProductsDetail
+    getProductsDetail,
+    searchProductByKeyword
 };

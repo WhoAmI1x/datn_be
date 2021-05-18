@@ -17,6 +17,7 @@ const htmlToPlainText = html => html.replace(/<style([\s\S]*?)<\/style>/gi, '')
     .replace(/<\/p>/ig, '\n')
     .replace(/<br\s*[\/]?>/gi, "\n")
     .replace(/&gt;|&lt;/g, '')
-    .replace(/<[^>]+>/ig, '');
+    .replace(/<[^>]+>/ig, '')
+    .replace(/\n+/ig, '\n');
 
 module.exports = htmlToPlainText;

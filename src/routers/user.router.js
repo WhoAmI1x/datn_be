@@ -10,16 +10,18 @@ const uploadAvatarImage = multer({ storage: storageAvatarImage });
 
 router.post("/register-admin-account", asyncWrap(UserControllers.registerAdminAccount));
 
-router.post("/login-with-admin-role", asyncWrap(UserControllers.loginWithAdminRole));
+router.post("/register-user-account", asyncWrap(UserControllers.registerUserAccount));
+
+router.post("/login", asyncWrap(UserControllers.login));
 
 router.get("/get-user-info", auth, asyncWrap(UserControllers.getUserInfo));
+
+router.post("/update-user", auth, asyncWrap(UserControllers.updateUser));
 
 router.get("/logout", auth, asyncWrap(UserControllers.logout));
 
 router.get("/get-all-user", auth, asyncWrap(UserControllers.getAllUser));
 
 router.delete("/delete-user", auth, asyncWrap(UserControllers.deleteUser));
-
-router.post("/login-with-user-role", asyncWrap(UserControllers.loginWithUserRole));
 
 module.exports = router;

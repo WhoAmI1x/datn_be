@@ -2,17 +2,18 @@ const User = require("../models/User");
 const CustomError = require("../errors/CustomError");
 const statusCodes = require("../errors/statusCodes");
 const { compare } = require("bcrypt");
+const CryptoJS = require("crypto-js");
 
 const registerAdminAccount = async ({ body: { fullName, email, password } }) => {
     try {
         const isUserExist = await User.findOne({ email });
 
         if (isUserExist) {
-            throw new CustomError("User is exist! Please sign up with another email!", statusCodes.BAD_REQUEST);
+            throw new CustomError("Người dùng đã tồn tại! Vui lòng chọn email khác!", statusCodes.BAD_REQUEST);
         }
 
         if (!password) {
-            throw new CustomError("Password invalid!", statusCodes.BAD_REQUEST);
+            throw new CustomError("Sai mật khẩu!", statusCodes.BAD_REQUEST);
         }
 
         const newUser = new User({ fullName, email, password, role: "ADMIN" });
@@ -25,17 +26,39 @@ const registerAdminAccount = async ({ body: { fullName, email, password } }) => 
     }
 };
 
-const loginWithAdminRole = async ({ email, password }) => {
+const registerUserAccount = async ({ body: { fullName, email, password } }) => {
+    try {
+        const isUserExist = await User.findOne({ email });
+
+        if (isUserExist) {
+            throw new CustomError("Người dùng đã tồn tại! Vui lòng chọn email khác!", statusCodes.BAD_REQUEST);
+        }
+
+        if (!password) {
+            throw new CustomError("Sai mật khẩu!", statusCodes.BAD_REQUEST);
+        }
+
+        const newUser = new User({ fullName, email, password, role: "USER" });
+
+        const token = await newUser.generateAuthToken();
+
+        return { newUser, token };
+    } catch (e) {
+        return { error: e };
+    }
+};
+
+const login = async ({ email, password }) => {
     try {
         const user = await User.findOne({ email });
 
         if (!user) {
-            throw new CustomError("User not found!", statusCodes.BAD_REQUEST);
+            throw new CustomError("Không tìm thấy người dùng!", statusCodes.BAD_REQUEST);
         }
 
         const isMatchPassword = await compare(password, user.password);
         if (!isMatchPassword) {
-            throw new CustomError("Password invalid!", statusCodes.BAD_REQUEST);
+            throw new CustomError("Sai mật khẩu!", statusCodes.BAD_REQUEST);
         }
 
         const token = await user.generateAuthToken();
@@ -56,6 +79,46 @@ const getUserInfo = async ({ _id }) => {
     }
 }
 
+const updateUser = async ({ user, body: { tikiAccount, shopeeAccount } }) => {
+    try {
+        const userNeedToUpdate = await User.findOne({ _id: user._id });
+
+        if (!userNeedToUpdate) {
+            throw new CustomError("Không tìm thấy người dùng!", statusCodes.NOT_FOUND);
+        }
+
+        if (tikiAccount) {
+            if (tikiAccount.password) {
+                tikiAccount = {
+                    ...tikiAccount,
+                    password: CryptoJS.AES.encrypt(tikiAccount.password, process.env.SECRET_KEY).toString()
+                };
+            }
+            userNeedToUpdate.tikiAccount = tikiAccount;
+        } else {
+            userNeedToUpdate.tikiAccount = {};
+        }
+
+        if (shopeeAccount) {
+            if (shopeeAccount.password) {
+                shopeeAccount = {
+                    ...shopeeAccount,
+                    password: CryptoJS.AES.encrypt(shopeeAccount.password, process.env.SECRET_KEY).toString()
+                };
+            }
+            userNeedToUpdate.shopeeAccount = shopeeAccount;
+        } else {
+            userNeedToUpdate.shopeeAccount = {};
+        }
+
+        await userNeedToUpdate.save();
+
+        return { user: userNeedToUpdate };
+    } catch (e) {
+        return { error: e };
+    }
+}
+
 const logout = async ({ user, token }) => {
     try {
         const tokensAfterLogOut = user.tokens.filter(tk => tk.token !== token);
@@ -63,7 +126,7 @@ const logout = async ({ user, token }) => {
 
         await user.save();
 
-        return { message: "Logout success!" };
+        return { message: "Đăng xuất thành công!" };
     } catch (e) {
         return { error: e };
     }
@@ -94,21 +157,13 @@ const deleteUser = async ({ query: { userId } }) => {
     }
 };
 
-const loginWithUserRole = async ({ }) => {
-    try {
-
-        return {};
-    } catch (e) {
-        return { error: e };
-    }
-}
-
 module.exports = {
     registerAdminAccount,
-    loginWithAdminRole,
+    registerUserAccount,
+    login,
     getUserInfo,
+    updateUser,
     logout,
     getAllUser,
     deleteUser,
-    loginWithUserRole
 };

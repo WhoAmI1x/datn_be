@@ -19,6 +19,7 @@ const ProductRouter = require("./routers/product.router");
 const ScheduleRouter = require("./routers/schedule.router");
 const TikiRouter = require("./routers/tiki.router");
 const ShopeeRouter = require("./routers/shopee.router");
+const StatisticRouter = require("./routers/statistic.router");
 
 app.use(express.static(path.join(__dirname, "./assets")));
 app.use(cors());
@@ -34,6 +35,7 @@ app.use("/product", ProductRouter);
 app.use("/schedule", ScheduleRouter);
 app.use("/tiki", TikiRouter);
 app.use("/shopee", ShopeeRouter);
+app.use("/statistic", StatisticRouter);
 app.use(errorHandler());
 
 app.listen(port, () => {

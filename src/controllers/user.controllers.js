@@ -4,15 +4,23 @@ const statusCodes = require("../errors/statusCodes");
 const registerAdminAccount = async (req, res) => {
     const { error, newUser, token } = await UserServices.registerAdminAccount(req);
     if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+        return res.status(error.statusCode).send({ error });
     }
     res.status(statusCodes.OK).send({ newUser, token });
 };
 
-const loginWithAdminRole = async (req, res) => {
-    const { error, user, token } = await UserServices.loginWithAdminRole(req.body);
+const registerUserAccount = async (req, res) => {
+    const { error, newUser, token } = await UserServices.registerUserAccount(req);
     if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+        return res.status(error.statusCode).send({ error });
+    }
+    res.status(statusCodes.OK).send({ newUser, token });
+};
+
+const login = async (req, res) => {
+    const { error, user, token } = await UserServices.login(req.body);
+    if (error) {
+        return res.status(error.statusCode).send({ error });
     }
     res.status(statusCodes.OK).send({ user, token });
 };
@@ -20,7 +28,15 @@ const loginWithAdminRole = async (req, res) => {
 const getUserInfo = async (req, res) => {
     const { error, user } = await UserServices.getUserInfo(req.user);
     if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+        return res.status(error.statusCode).send({ error });
+    }
+    res.status(statusCodes.OK).send({ user });
+};
+
+const updateUser = async (req, res) => {
+    const { error, user } = await UserServices.updateUser(req);
+    if (error) {
+        return res.status(error.statusCode).send({ error });
     }
     res.status(statusCodes.OK).send({ user });
 };
@@ -49,20 +65,13 @@ const deleteUser = async (req, res) => {
     res.status(statusCodes.OK).send({ allUser });
 };
 
-const loginWithUserRole = async (req, res) => {
-    const { error, user } = await UserServices.loginWithUserRole(req);
-    if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
-    }
-    res.status(statusCodes.OK).send({ user });
-};
-
 module.exports = {
     registerAdminAccount,
-    loginWithAdminRole,
+    registerUserAccount,
+    login,
     getUserInfo,
+    updateUser,
     logout,
     getAllUser,
     deleteUser,
-    loginWithUserRole,
 };

@@ -2,6 +2,7 @@ const { hash } = require("bcrypt");
 const { Schema, model, models } = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const CryptoJS = require("crypto-js");
 
 const userSchema = new Schema({
     fullName: { type: String, trim: true },
@@ -55,6 +56,22 @@ userSchema.methods.toJSON = function () {
 
     if (user.role === "ADMIN") {
         delete userObject.discountCodeIds;
+        userObject.tikiAccount && (delete userObject.tikiAccount);
+        userObject.shopeeAccount && (delete userObject.shopeeAccount);
+    }
+
+    if (userObject.tikiAccount && userObject.tikiAccount.password) {
+        userObject.tikiAccount = {
+            ...userObject.tikiAccount,
+            password: CryptoJS.AES.decrypt(userObject.tikiAccount.password, process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8)
+        }
+    }
+
+    if (userObject.shopeeAccount && userObject.shopeeAccount.password) {
+        userObject.shopeeAccount = {
+            ...userObject.shopeeAccount,
+            password: CryptoJS.AES.decrypt(userObject.shopeeAccount.password, process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8)
+        }
     }
 
     return userObject;

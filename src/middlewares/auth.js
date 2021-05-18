@@ -11,18 +11,18 @@ const auth = async (req, res, next) => {
         const user = await User.findOne({ _id: decoded._id, "tokens.token": token });
 
         if (!user) {
-            throw new CustomError("User not found!", statusCodes.NOT_FOUND);
+            throw new CustomError("Không tìm thấy người dùng!", statusCodes.NOT_FOUND);
         }
 
         if (role !== user.role) {
-            throw new CustomError("User invalid!", statusCodes.FORBIDDEN);
+            throw new CustomError("Người dùng không hợp lệ!", statusCodes.FORBIDDEN);
         }
 
         req.user = user;
         req.token = token;
         next();
     } catch (e) {
-        return res.status(statusCodes.UNAUTHORIZED).send({ error: "Please authenticate!" });
+        return res.status(e.statusCode || statusCodes.UNAUTHORIZED).send({ error: e.message || "Vui lòng xác thực!" });
     }
 };
 

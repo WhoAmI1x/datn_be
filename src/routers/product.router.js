@@ -10,4 +10,8 @@ router.get("/get-product-detail", auth, asyncWrap(ProductControllers.getDetailPr
 
 router.delete("/delete-product", auth, asyncWrap(ProductControllers.deleteProduct));
 
+router.get("/search-product", auth, asyncWrap(ProductControllers.searchProduct))
+
+router.get("/get-product-detail-searched", auth, asyncWrap(ProductControllers.getDetailProductSearched));
+
 module.exports = router;

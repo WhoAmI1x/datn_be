@@ -9,7 +9,9 @@ const {
     getDiscountCodeByCategory,
     getTodaySaleProductSchedules,
     getProductsByCategoryAndTime,
-    getProductsDetail
+    getProductsDetail,
+    searchProductByKeyword,
+    getProductsDetailSearched
 } = require("../apis/tiki");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
@@ -96,7 +98,7 @@ const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => 
         const category = await Category.findOne({ _id: categoryId });
 
         if (!category) {
-            return { error: "Category not found!" };
+            return { error: "Không tìm thấy danh mục!" };
         }
 
         let activeSchedule = await Schedule.findOne({ ecommerce: "TIKI", startTime: { $lt: Date.now() }, endTime: { $gt: Date.now() } });
@@ -107,7 +109,7 @@ const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => 
             activeSchedule = await Schedule.findOne({ ecommerce: "TIKI", startTime: { $lt: Date.now() }, endTime: { $gt: Date.now() } });
 
             if (!activeSchedule) {
-                return { products, message: "Products is empty!" };
+                return { products, message: "Danh sách sản phẩm trống!" };
             }
         }
 
@@ -166,9 +168,67 @@ const getProductDetailFromEcommerce = async ({ _id, tikiMasterId, mainId }) => {
     }
 };
 
+const searchProductByKeywordFromEcommerce = async (keyword) => {
+    try {
+        let products = await searchProductByKeyword(keyword);
+
+        if (products.length > 0) {
+            const markTime = Date.now();
+
+            const productsMapped = products.map(pMapped => ({
+                mainId: pMapped.id,
+                imageUrls: [pMapped.thumbnail_url],
+                name: pMapped.name,
+                price: pMapped.price,
+                priceBeforeDiscount: pMapped.list_price,
+                rateAverage: pMapped.rating_average,
+                productUrl: `https://tiki.vn/${pMapped.url_path}`,
+                tikiMasterId: pMapped.id,
+                quantity: pMapped.stock_item.qty,
+                discountPercent: pMapped.discount_rate,
+                ecommerce: "TIKI",
+                markTime
+            }));
+
+            await Product.insertMany(productsMapped);
+            products = await Product.find({ markTime });
+            return products;
+        } else {
+            return { products: [], message: `Danh sách trống!` };
+        }
+    } catch (e) {
+        return { error: e };
+    }
+}
+
+const getProductDetailSearchedFromEcommerce = async ({ _id, tikiMasterId }) => {
+    try {
+        const productFullInfoFromEcommerce = await getProductsDetailSearched({ tikiMasterId });
+        const productFullInfo = await Product.findOneAndUpdate(
+            { _id },
+            {
+                $set: {
+                    productDetail: productFullInfoFromEcommerce.productDetail,
+                    productDescription: productFullInfoFromEcommerce.productDescription,
+                    imageUrls: productFullInfoFromEcommerce.images,
+                    rateAverage: productFullInfoFromEcommerce.rateAverage,
+                    quantitySold: productFullInfoFromEcommerce.quantitySold,
+                    mainId: productFullInfoFromEcommerce.mainId
+                }
+            },
+            { new: true });
+
+        return productFullInfo;
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getTodaySaleProductSchedulesFromEcommerce,
     getProductsByCategoryFromEcommerce,
-    getProductDetailFromEcommerce
+    getProductDetailFromEcommerce,
+    searchProductByKeywordFromEcommerce,
+    getProductDetailSearchedFromEcommerce
 };

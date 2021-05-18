@@ -23,7 +23,9 @@ const productSchema = new Schema({
     priceMaxBeforeDiscount: { type: Number },
     priceMinBeforeDiscount: { type: Number },
     shopeeShopId: { type: Number },
-    shopeeModels: [Object]
+    shopeeModels: [Object],
+    markTime: { type: Number },
+    ecommerce: { type: String },
 });
 
 module.exports = models.Product || model('Product', productSchema);
