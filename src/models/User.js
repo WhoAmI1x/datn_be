@@ -29,13 +29,17 @@ const userSchema = new Schema({
         username: { type: String },
         password: { type: String },
         auth: {
-            token: { type: String }
+            token: { type: String },
+            refreshToken: { type: String },
+            expires_at: { type: String }
         }
     },
     shopeeAccount: {
         username: { type: String },
         password: { type: String },
-        auth: { type: String }
+        auth: {
+            cookie: { type: String }
+        }
     },
     tokens: [
         {
@@ -80,7 +84,8 @@ userSchema.methods.toJSON = function () {
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
     const token = jwt.sign({ _id: user._id.toString() }, process.env.SECRET_KEY, { expiresIn: "1 days" });
-    user.tokens = user.tokens.concat({ token });
+    // user.tokens = user.tokens.concat({ token });
+    user.tokens = [{ token }];
     await user.save();
     return token;
 }

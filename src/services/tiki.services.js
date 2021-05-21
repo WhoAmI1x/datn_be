@@ -3,6 +3,9 @@ const DiscountCode = require("../models/DiscountCode");
 const Schedule = require("../models/Schedule");
 const Product = require("../models/Product");
 const { getDiscountCodeApiUrlFromBrowser } = require("../utils/getApiUrlFromBrowser");
+const CustomError = require("../errors/CustomError");
+const statusCodes = require("../errors/statusCodes");
+const CryptoJS = require("crypto-js");
 const {
     getDiscountCodeWithDetectFieldId,
     getDiscountCodePlatformShippingOrTopCoupons,
@@ -11,7 +14,10 @@ const {
     getProductsByCategoryAndTime,
     getProductsDetail,
     searchProductByKeyword,
-    getProductsDetailSearched
+    getProductsDetailSearched,
+    logInToGetAuthInfo,
+    saveCoupon,
+    saveProduct
 } = require("../apis/tiki");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
@@ -224,11 +230,67 @@ const getProductDetailSearchedFromEcommerce = async ({ _id, tikiMasterId }) => {
     }
 };
 
+const logInAccountEcommerce = async (user) => {
+    try {
+        const { access_token, refresh_token, expires_at } = await logInToGetAuthInfo({
+            username: user.tikiAccount.username,
+            password: CryptoJS.AES.decrypt(user.tikiAccount.password, process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8),
+        });
+
+        if (access_token && refresh_token && expires_at) {
+            user.tikiAccount.auth = {
+                token: access_token,
+                refreshToken: refresh_token,
+                expires_at: expires_at,
+            }
+
+            await user.save();
+
+            return { message: "OK" };
+        } else {
+            throw new CustomError("Đăng nhập sàn tiki thất bại!", statusCodes.UNAUTHORIZED);
+        }
+    } catch (e) {
+        return { error: e };
+    }
+};
+
+const saveDiscountCodeToAccountEcommerce = async ({ tikiRuleId, code, xAccessToken }) => {
+    try {
+        const result = await saveCoupon({ tikiRuleId, code, xAccessToken });
+
+        if (result.code === 0 && result.message === "OK") {
+            return { message: result.message };
+        }
+
+        throw new CustomError("Lưu mã thất bại!", statusCodes.EXPECTATION_FAILED);
+    } catch (e) {
+        return { error: e };
+    }
+};
+
+const saveProductToAccountEcommerce = async ({ productId, xAccessToken }) => {
+    try {
+        const result = await saveProduct({ productId, xAccessToken });
+
+        if (result.error) {
+            throw new CustomError("Thêm vào giỏ hàng thất bại!", statusCodes.EXPECTATION_FAILED);
+        }
+
+        return { message: "Thêm vào giỏ hàng thành công!" };
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getTodaySaleProductSchedulesFromEcommerce,
     getProductsByCategoryFromEcommerce,
     getProductDetailFromEcommerce,
     searchProductByKeywordFromEcommerce,
-    getProductDetailSearchedFromEcommerce
+    getProductDetailSearchedFromEcommerce,
+    logInAccountEcommerce,
+    saveDiscountCodeToAccountEcommerce,
+    saveProductToAccountEcommerce
 };

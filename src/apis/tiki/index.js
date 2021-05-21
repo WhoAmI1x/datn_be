@@ -3,7 +3,10 @@ const htmlToPlainText = require("../../utils/htmlToPlainText");
 const {
     tikiDiscountCodeBaseApiUrl,
     tikiProductSaleBaseApiUrl,
-    tikiSearchBaseApiUrl
+    tikiSearchBaseApiUrl,
+    tikiLogInBaseApi,
+    tikiSaveDiscountCodeBaseApi,
+    tikiCartBaseApi
 } = require("../../utils/constants");
 
 const getDiscountCodeWithDetectFieldId = async (url) => {
@@ -173,6 +176,38 @@ const getProductsDetailSearched = async ({ tikiMasterId }) => {
     });
 };
 
+const logInToGetAuthInfo = async ({ username, password }) => {
+    const res = await axios({
+        method: "POST",
+        url: `${tikiLogInBaseApi}`,
+        data: {
+            grant_type: "password",
+            email: username,
+            password
+        }
+    });
+
+    return res.data;
+};
+
+const saveCoupon = async ({ tikiRuleId, code, xAccessToken }) => {
+    const res = await axios({
+        method: "POST",
+        url: `${tikiSaveDiscountCodeBaseApi}`,
+        headers: {
+            "x-access-token": xAccessToken
+        },
+        params: {
+            ruleId: tikiRuleId,
+            coupon_code: code
+        }
+    });
+
+    return res.data && res.data.error;
+}
+
+
+
 module.exports = {
     getDiscountCodeWithDetectFieldId,
     getDiscountCodePlatformShippingOrTopCoupons,
@@ -181,5 +216,7 @@ module.exports = {
     getProductsByCategoryAndTime,
     getProductsDetail,
     searchProductByKeyword,
-    getProductsDetailSearched
+    getProductsDetailSearched,
+    logInToGetAuthInfo,
+    saveCoupon,
 };

@@ -9,4 +9,6 @@ router.get("/get-discount-codes-by-category", auth, asyncWrap(DiscountCodeContro
 
 router.delete("/delete-discount-code-by-id", auth, asyncWrap(DiscountCodeControllers.deleteDiscountCodeById));
 
+router.post("/save-discount-code", auth, asyncWrap(DiscountCodeControllers.saveDiscountCode));
+
 module.exports = router;

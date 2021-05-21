@@ -48,12 +48,16 @@ const registerUserAccount = async ({ body: { fullName, email, password } }) => {
     }
 };
 
-const login = async ({ email, password }) => {
+const login = async ({ email, password, userRole }) => {
     try {
         const user = await User.findOne({ email });
 
         if (!user) {
             throw new CustomError("Không tìm thấy người dùng!", statusCodes.BAD_REQUEST);
+        }
+
+        if (user.role !== userRole) {
+            throw new CustomError("Người dùng không có quyền truy cập!", statusCodes.FORBIDDEN);
         }
 
         const isMatchPassword = await compare(password, user.password);
@@ -151,7 +155,7 @@ const deleteUser = async ({ query: { userId } }) => {
             return { allUser };
         }
 
-        return { error: "Delete user failed!" };
+        return { error: "Xóa người dùng thất bại!" };
     } catch (e) {
         return { error: e };
     }

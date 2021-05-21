@@ -22,7 +22,9 @@ const auth = async (req, res, next) => {
         req.token = token;
         next();
     } catch (e) {
-        return res.status(e.statusCode || statusCodes.UNAUTHORIZED).send({ error: e.message || "Vui lòng xác thực!" });
+        return res.status(e.statusCode || statusCodes.UNAUTHORIZED).send({
+            error: (e.message === "jwt expired" ? "Phiên làm việc đã hết hạn!" : e.message) || "Vui lòng xác thực!"
+        });
     }
 };
 

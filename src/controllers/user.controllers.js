@@ -18,7 +18,7 @@ const registerUserAccount = async (req, res) => {
 };
 
 const login = async (req, res) => {
-    const { error, user, token } = await UserServices.login(req.body);
+    const { error, user, token } = await UserServices.login({ ...req.body, userRole: req.headers["user-role"] });
     if (error) {
         return res.status(error.statusCode).send({ error });
     }
