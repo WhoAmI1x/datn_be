@@ -206,7 +206,22 @@ const saveCoupon = async ({ tikiRuleId, code, xAccessToken }) => {
     return res.data && res.data.error;
 }
 
+const saveProduct = async ({ productId, xAccessToken }) => {
+    const res = await axios({
+        method: "POST",
+        url: `${tikiCartBaseApi}`,
+        headers: {
+            "x-access-token": xAccessToken
+        },
+        data: {
+            products: [
+                { "product_id": productId, "qty": 1 }
+            ]
+        }
+    });
 
+    return res.data;
+};
 
 module.exports = {
     getDiscountCodeWithDetectFieldId,
@@ -219,4 +234,5 @@ module.exports = {
     getProductsDetailSearched,
     logInToGetAuthInfo,
     saveCoupon,
+    saveProduct
 };

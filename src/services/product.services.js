@@ -2,6 +2,8 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const TikiServices = require("./tiki.services");
 const ShopeeServices = require("./shopee.services");
+const CustomError = require("../errors/CustomError");
+const User = require("../models/User");
 
 const getDetailProduct = async ({ query: { productId } }) => {
     try {
@@ -89,10 +91,50 @@ const getDetailProductSearched = async ({ query: { productId } }) => {
     }
 };
 
+const addProductToCart = async ({ user, productId }) => {
+    try {
+        const product = await Product.findOne({ _id: productId }).populate("categoryId");
+
+        if (product.categoryId.ecommerce === "TIKI") {
+            if (!user.tikiAccount.username && !user.tikiAccount.password) {
+                throw new CustomError("Bạn chưa nhập tài khoản tiki!", statusCodes.BAD_REQUEST);
+            }
+
+            if (!user.tikiAccount.auth ||
+                user.tikiAccount.auth && !user.tikiAccount.auth.token ||
+                user.tikiAccount.auth && user.tikiAccount.auth.token && user.tikiAccount.auth.expires_at <= Date.now()) {
+                const { error, message } = await TikiServices.logInAccountEcommerce(user);
+
+                if (error) {
+                    throw error;
+                }
+            }
+
+            const userLoggedIn = await User.findOne({ _id: user._id });
+
+            const result = await TikiServices.saveProductToAccountEcommerce({
+                productId: product.mainId,
+                xAccessToken: userLoggedIn.tikiAccount.auth.token
+            });
+
+            if (result.error) {
+                throw error;
+            }
+
+            return { message: result.message };
+        } else {
+
+        }
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDetailProduct,
     getProductsByCategory,
     deleteProduct,
     searchProduct,
-    getDetailProductSearched
+    getDetailProductSearched,
+    addProductToCart
 };

@@ -41,10 +41,19 @@ const getDetailProductSearched = async (req, res) => {
     res.status(statusCodes.OK).send({ productFullInfo });
 };
 
+const addProductToCart = async (req, res) => {
+    const { error, message } = await ProductServices.addProductToCart({ ...req.query, user: req.user });
+    if (error) {
+        return res.status(error.statusCode).send({ error });
+    }
+    res.status(statusCodes.OK).send({ message });
+};
+
 module.exports = {
     getDetailProduct,
     getProductsByCategory,
     deleteProduct,
     searchProduct,
-    getDetailProductSearched
+    getDetailProductSearched,
+    addProductToCart
 };

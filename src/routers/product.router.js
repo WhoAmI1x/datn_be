@@ -14,4 +14,6 @@ router.get("/search-product", auth, asyncWrap(ProductControllers.searchProduct))
 
 router.get("/get-product-detail-searched", auth, asyncWrap(ProductControllers.getDetailProductSearched));
 
+router.post("/add-product-to-cart", auth, asyncWrap(ProductControllers.addProductToCart));
+
 module.exports = router;
