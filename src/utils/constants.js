@@ -11,5 +11,9 @@ module.exports = {
     shopeeProductSaleBaseApiUrl: "https://shopee.vn/api/v2/flash_sale",
     shopeeSearchBaseApiUrl: "https://shopee.vn/api/v4/search/search_items",
     shopeeImageUrl: "https://cf.shopee.vn/file",
-    shopeeProductDetailBaseApiUrl: "https://shopee.vn/api/v2/item/get"
+    shopeeProductDetailBaseApiUrl: "https://shopee.vn/api/v2/item/get",
+    shopeeSaveDiscountCodeBaseApi: "https://shopee.vn/api/v2/voucher_wallet/save_voucher",
+    shopeeLogInBaseApi: "https://shopee.vn/api/v2/authentication/login",
+    shopeeGetUserInfoBaseApi: "https://shopee.vn/api/v2/user/profile/get/"
+
 }

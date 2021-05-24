@@ -3,11 +3,9 @@ const statusCodes = require("../errors/statusCodes");
 const DiscountCode = require("../models/DiscountCode");
 const Product = require("../models/Product");
 const User = require("../models/User");
-const {
-    saveDiscountCodeToAccountEcommerce,
-    logInAccountEcommerce,
-    saveProductToAccountEcommerce
-} = require("./tiki.services");
+const TikiServices = require("./tiki.services");
+const ShopeeServices = require("./shopee.services");
+const { getUserInfo } = require("../apis/shopee");
 
 const getDiscountCodesByCategory = async ({ query: { categoryId } }) => {
     try {
@@ -46,7 +44,7 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
             if (!user.tikiAccount.auth ||
                 user.tikiAccount.auth && !user.tikiAccount.auth.token ||
                 user.tikiAccount.auth && user.tikiAccount.auth.token && user.tikiAccount.auth.expires_at <= Date.now()) {
-                const { error, message } = await logInAccountEcommerce(user);
+                const { error, message } = await TikiServices.logInAccountEcommerce(user);
 
                 if (error) {
                     throw error;
@@ -55,7 +53,7 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
 
             const userLoggedIn = await User.findOne({ _id: user._id });
 
-            const result = await saveDiscountCodeToAccountEcommerce({
+            const result = await TikiServices.saveDiscountCodeToAccountEcommerce({
                 tikiRuleId: discountCode.tikiRuleId,
                 code: discountCode.code,
                 xAccessToken: userLoggedIn.tikiAccount.auth.token
@@ -69,8 +67,50 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
             await user.save();
 
             return { message: result.message };
-        } else {
+        }
+        else {
+            if (!user.shopeeAccount.username && !user.shopeeAccount.password) {
+                throw new CustomError("Bạn chưa nhập tài khoản shopee!", statusCodes.BAD_REQUEST);
+            }
 
+            if (!user.shopeeAccount.auth ||
+                user.shopeeAccount.auth && !user.shopeeAccount.auth.cookie) {
+                const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+
+                if (error) {
+                    throw error;
+                }
+            }
+            // else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
+            //     const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
+
+            //     if (isCookieExpired) {
+            //         const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+
+            //         if (error) {
+            //             throw error;
+            //         }
+            //     }
+            // }
+
+            const userLoggedIn = await User.findOne({ _id: user._id });
+
+            const result = await ShopeeServices.saveDiscountCodeToAccountEcommerce({
+                voucherCode: discountCode.code,
+                voucherPromotionid: discountCode.mainId,
+                signature: discountCode.shopeeSignature,
+                csrfToken: userLoggedIn.shopeeAccount.auth.csrfToken,
+                cookie: userLoggedIn.shopeeAccount.auth.cookie
+            });
+
+            if (result.error) {
+                throw error;
+            }
+
+            user.discountCodeIds.push(discountCode._id);
+            await user.save();
+
+            return { message: result.message };
         }
     } catch (e) {
         return { error: e };

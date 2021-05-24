@@ -1,11 +1,16 @@
 const axios = require("axios");
 const randomString = require("../../utils/randomString");
 const md5 = require("md5");
+const { SHA256, MD5 } = require("crypto-js");
+const isPhoneNumber = require("../../utils/isPhoneNumber");
 const {
     shopeeSearchBaseApiUrl,
     shopeeDiscountCodeBaseApiUrl,
     shopeeProductSaleBaseApiUrl,
-    shopeeProductDetailBaseApiUrl
+    shopeeProductDetailBaseApiUrl,
+    shopeeSaveDiscountCodeBaseApi,
+    shopeeLogInBaseApi,
+    shopeeGetUserInfoBaseApi,
 } = require("../../utils/constants");
 
 const getShopIds = async (categoryId) => {
@@ -104,7 +109,7 @@ const getProductsDetail = async ({ itemid, shopid }) => {
         method: "GET",
         url: `${shopeeProductDetailBaseApiUrl}`,
         headers: {
-            "if-none-match-": md5(`55b03${md5(`itemid=${itemid}&shopid=${shopid}`)}55b03`),
+            "if-none-match-": `55b03-${md5(`55b03${md5(`itemid=${itemid}&shopid=${shopid}`)}55b03`)}`,
             "user-agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36`,
         },
         params: {
@@ -151,11 +156,117 @@ const searchProductByKeyword = async (keyword) => {
     return res.data && res.data.items || [];
 };
 
+const getUserInfo = async ({ cookie }) => {
+    const res = await axios({
+        method: "GET",
+        url: `${shopeeGetUserInfoBaseApi}`,
+        headers: {
+            referer: "https://shopee.vn/user/account/profile",
+            "x-api-source": "pc",
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            cookie: `${cookie}`
+        }
+    });
+
+    return res.data && res.data.error;
+};
+
+const logInToGetAuthInfo = async ({ username, password }) => {
+    const csrfToken = randomString(32);
+    const password_hashed = SHA256(MD5(password).toString().toLowerCase()).toString();
+
+    const resInit = await axios({
+        method: "GET",
+        url: `${shopeeLogInBaseApi}`,
+        headers: {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36",
+            "x-api-source": "pc",
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            "x-csrftoken": `${csrfToken}`,
+            referer: "https://shopee.vn/buyer/login",
+            cookie: `csrftoken=${csrfToken};`
+        },
+    });
+
+    let cookie = resInit.headers["set-cookie"].map(cookie => cookie.split(";")[0]).join("; ");
+    let dataLogIn = {
+        password: password_hashed,
+        support_whats_app: true,
+        support_ivs: true
+    };
+
+    if (isPhoneNumber(`${username}`)) {
+        dataLogIn = { ...dataLogIn, phone: `84${username.substr(1, username.length)}` };
+    } else {
+        dataLogIn = { ...dataLogIn, username };
+    }
+
+    const resMain = await axios({
+        method: "POST",
+        url: `${shopeeLogInBaseApi}`,
+        headers: {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+            "x-api-source": "pc",
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            "x-csrftoken": `${csrfToken}`,
+            referer: "https://shopee.vn/buyer/login",
+            cookie: `csrftoken=${csrfToken}; ${cookie}`
+        },
+        data: dataLogIn
+    });
+
+    cookie = resMain.headers["set-cookie"].map(cookie => cookie.split(";")[0]).join("; ");
+
+    return { cookie, csrfToken };
+};
+
+const saveVoucher = async ({ voucherCode, voucherPromotionid, signature, csrfToken, cookie }) => {
+    const dataSaveVoucher = {
+        voucher_code: voucherCode,
+        voucher_promotionid: voucherPromotionid,
+        signature
+    };
+
+    const res = await axios({
+        method: "POST",
+        url: `${shopeeSaveDiscountCodeBaseApi}`,
+        headers: {
+            authority: "shopee.vn",
+            "sec-ch-ua": `" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"`,
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+            "x-api-source": "pc",
+            "accept": "application/json",
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            "if-none-match-": `55b03-${md5(`55b03${md5(JSON.stringify(dataSaveVoucher))}55b03`)}`,
+            "content-type": "application/json",
+            "x-csrftoken": `${csrfToken}`,
+            "origin": "https://shopee.vn",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "https://shopee.vn/",
+            "accept-language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5,de;q=0.4,ko;q=0.3,und;q=0.2,it;q=0.1,zh-CN;q=0.1,zh-TW;q=0.1,zh;q=0.1,ru;q=0.1,la;q=0.1,pt;q=0.1,pl;q=0.1,es;q=0.1,ja;q=0.1",
+            "cookie": `csrftoken=${csrfToken}; ${cookie}`,
+        },
+        data: dataSaveVoucher
+    });
+
+    return res.data;
+};
+
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
     getFlashSaleProductSchedules,
     getAllFlashSaleProductBrief,
     getAllFlashSaleProductByCategoryAndTime,
     getProductsDetail,
-    searchProductByKeyword
+    searchProductByKeyword,
+    logInToGetAuthInfo,
+    saveVoucher,
+    getUserInfo
 };

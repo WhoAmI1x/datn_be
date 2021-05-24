@@ -38,7 +38,8 @@ const userSchema = new Schema({
         username: { type: String },
         password: { type: String },
         auth: {
-            cookie: { type: String }
+            cookie: { type: String },
+            csrfToken: { type: String }
         }
     },
     tokens: [

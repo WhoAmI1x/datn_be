@@ -4,6 +4,7 @@ const Schedule = require("../models/Schedule");
 const Product = require("../models/Product");
 const { shopeeImageUrl } = require("../utils/constants");
 const ProductBrief = require("../models/ProductBrief");
+const CryptoJS = require("crypto-js");
 const {
     getDiscountCodeShopeeTitle,
     getDiscountCodeShopeeDescription,
@@ -15,7 +16,9 @@ const {
     getAllFlashSaleProductBrief,
     getAllFlashSaleProductByCategoryAndTime,
     getProductsDetail,
-    searchProductByKeyword
+    searchProductByKeyword,
+    logInToGetAuthInfo,
+    saveVoucher,
 } = require("../apis/shopee");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
@@ -23,7 +26,7 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
         const category = await Category.findOne({ _id: categoryId });
 
         if (!category) {
-            return { error: "Category not found!" };
+            return { error: "Danh mục không tồn tại!" };
         }
 
         const discountCodes = await getDiscountCodeByShopIdAndCategory(category.mainId);
@@ -228,10 +231,47 @@ const searchProductByKeywordFromEcommerce = async (keyword) => {
     }
 }
 
+const logInAccountEcommerce = async (user) => {
+    try {
+        const { cookie, csrfToken } = await logInToGetAuthInfo({
+            username: user.shopeeAccount.username,
+            password: CryptoJS.AES.decrypt(user.shopeeAccount.password, process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8),
+        });
+
+        if (cookie && csrfToken) {
+            user.shopeeAccount.auth = { cookie, csrfToken };
+
+            await user.save();
+
+            return { message: "OK" };
+        } else {
+            throw new CustomError("Đăng nhập sàn shopee thất bại!", statusCodes.UNAUTHORIZED);
+        }
+    } catch (e) {
+        return { error: e };
+    }
+};
+
+const saveDiscountCodeToAccountEcommerce = async ({ voucherCode, voucherPromotionid, signature, csrfToken, cookie }) => {
+    try {
+        const result = await saveVoucher({ voucherCode, voucherPromotionid, signature, csrfToken, cookie });
+
+        if (!result.code) {
+            return { message: "Lưu mã thành công!" };
+        }
+
+        throw new CustomError("Lưu mã thất bại!", statusCodes.EXPECTATION_FAILED);
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
     getProductsByCategoryFromEcommerce,
     getProductDetailFromEcommerce,
-    searchProductByKeywordFromEcommerce
+    searchProductByKeywordFromEcommerce,
+    logInAccountEcommerce,
+    saveDiscountCodeToAccountEcommerce
 };
