@@ -18,4 +18,13 @@ const storageAvatarImage = multer.diskStorage({
     }
 });
 
-module.exports = { storageCategoryImage, storageAvatarImage };
+const storagePersonalDiscountCodeImage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./src/assets/images/personalDiscountCodes");
+    },
+    filename: function (req, file, cb) {
+        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+    }
+});
+
+module.exports = { storageCategoryImage, storageAvatarImage, storagePersonalDiscountCodeImage };

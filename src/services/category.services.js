@@ -55,7 +55,7 @@ const deleteCategory = async ({ query: { categoryId } }) => {
             return { categories };
         }
 
-        return { error: "Delete category failed!" };
+        return { error: "Xóa danh mục thất bại!" };
     } catch (e) {
         return { error: e };
     }
@@ -77,7 +77,7 @@ const updateCategory = async ({ file, body, query: { categoryId } }) => {
             return { categories };
         }
 
-        return { error: "Update category failed!" };
+        return { error: "Cập nhật danh mục thất bại!" };
     } catch (e) {
         return { error: e };
     }

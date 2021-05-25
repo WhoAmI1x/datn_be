@@ -20,6 +20,7 @@ const ScheduleRouter = require("./routers/schedule.router");
 const TikiRouter = require("./routers/tiki.router");
 const ShopeeRouter = require("./routers/shopee.router");
 const StatisticRouter = require("./routers/statistic.router");
+const PersonalDiscountCodeRouter = require("./routers/personalDiscountCode.router");
 
 app.use(express.static(path.join(__dirname, "./assets")));
 app.use(cors());
@@ -36,6 +37,7 @@ app.use("/schedule", ScheduleRouter);
 app.use("/tiki", TikiRouter);
 app.use("/shopee", ShopeeRouter);
 app.use("/statistic", StatisticRouter);
+app.use("/personal-discount-code", PersonalDiscountCodeRouter);
 app.use(errorHandler());
 
 app.listen(port, () => {
