@@ -11,6 +11,7 @@ const {
     shopeeSaveDiscountCodeBaseApi,
     shopeeLogInBaseApi,
     shopeeGetUserInfoBaseApi,
+    shopeeCartBaseApi
 } = require("../../utils/constants");
 
 const getShopIds = async (categoryId) => {
@@ -81,6 +82,8 @@ const getAllFlashSaleProductBrief = async ({ promotionid }) => {
 
 const getAllFlashSaleProductByCategoryAndTime = async ({ categoryid, promotionid, limit, itemids }) => {
     const csrftoken = randomString(32);
+
+    itemids.length = 40;
 
     const res = await axios({
         method: "POST",
@@ -259,6 +262,35 @@ const saveVoucher = async ({ voucherCode, voucherPromotionid, signature, csrfTok
     return res.data;
 };
 
+const saveProduct = async ({ itemid, modelid, shopid, cookie }) => {
+    const res = await axios({
+        method: "POST",
+        url: `${shopeeCartBaseApi}`,
+        headers: {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+            "x-api-source": "pc",
+            "content-type": "application/json",
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            cookie: `${cookie}`
+        },
+        data: {
+            checkout: true,
+            client_source: 1,
+            source: "{'refer_urls':[]}",
+            update_checkout_only: false,
+            donot_add_quantity: false,
+            quantity: 1,
+            itemid: Number(itemid),
+            modelid: Number(modelid),
+            shopid: Number(shopid)
+        }
+    });
+
+    return res.data;
+};
+
+
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
     getFlashSaleProductSchedules,
@@ -268,5 +300,6 @@ module.exports = {
     searchProductByKeyword,
     logInToGetAuthInfo,
     saveVoucher,
-    getUserInfo
+    getUserInfo,
+    saveProduct
 };

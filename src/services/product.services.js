@@ -4,6 +4,7 @@ const TikiServices = require("./tiki.services");
 const ShopeeServices = require("./shopee.services");
 const CustomError = require("../errors/CustomError");
 const User = require("../models/User");
+const { getUserInfo } = require("../apis/shopee");
 
 const getDetailProduct = async ({ query: { productId } }) => {
     try {
@@ -91,7 +92,7 @@ const getDetailProductSearched = async ({ query: { productId } }) => {
     }
 };
 
-const addProductToCart = async ({ user, productId }) => {
+const addProductToCart = async ({ user, productId, modelId }) => {
     try {
         const product = await Product.findOne({ _id: productId }).populate("categoryId");
 
@@ -122,8 +123,48 @@ const addProductToCart = async ({ user, productId }) => {
             }
 
             return { message: result.message };
-        } else {
+        }
+        else {
+            if (!user.shopeeAccount.username && !user.shopeeAccount.password) {
+                throw new CustomError("Bạn chưa nhập tài khoản shopee!", statusCodes.BAD_REQUEST);
+            }
 
+            if (!user.shopeeAccount.auth ||
+                user.shopeeAccount.auth && !user.shopeeAccount.auth.cookie) {
+                const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+
+                if (error) {
+                    throw error;
+                }
+            }
+            // else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
+            //     const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
+
+            //     if (isCookieExpired) {
+            //         const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+
+            //         if (error) {
+            //             throw error;
+            //         }
+            //     }
+            // }
+
+            const userLoggedIn = await User.findOne({ _id: user._id });
+
+            const result = await ShopeeServices.saveProductToAccountEcommerce({
+                itemid: product.mainId,
+                modelid: modelId,
+                shopid: product.shopeeShopId,
+                cookie: userLoggedIn.shopeeAccount.auth.cookie
+            });
+
+            if (result.error) {
+                throw error;
+            }
+
+            await user.save();
+
+            return { message: result.message };
         }
     } catch (e) {
         return { error: e };

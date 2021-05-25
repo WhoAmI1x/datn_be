@@ -19,7 +19,10 @@ const {
     searchProductByKeyword,
     logInToGetAuthInfo,
     saveVoucher,
+    saveProduct
 } = require("../apis/shopee");
+const CustomError = require("../errors/CustomError");
+const statusCodes = require("../errors/statusCodes");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
     try {
@@ -115,7 +118,7 @@ const getProductsByCategoryFromEcommerce = async ({ query: { categoryId } }) => 
         const category = await Category.findOne({ _id: categoryId });
 
         if (!category) {
-            return { error: "Category not found!" };
+            return { error: "Không tìm thấy danh mục!" };
         }
 
         let activeSchedule = await Schedule.findOne({ ecommerce: "SHOPEE", startTime: { $lt: Date.now() }, endTime: { $gt: Date.now() } });
@@ -185,8 +188,9 @@ const getProductDetailFromEcommerce = async ({ _id, mainId, shopeeShopId }) => {
                     priceMin: productFullInfoFromEcommerce.price_min / 100000,
                     priceMaxBeforeDiscount: productFullInfoFromEcommerce.price_max_before_discount / 100000,
                     priceMinBeforeDiscount: productFullInfoFromEcommerce.price_min_before_discount / 100000,
-                    shopeeModels: productFullInfoFromEcommerce.models.map(({ name, modelid }) => ({ name, modelid })),
-                    imageUrls: [...productFullInfoFromEcommerce.images.map(image => `${shopeeImageUrl}/${image}`)]
+                    shopeeModels: productFullInfoFromEcommerce.models.map(({ name, modelid, price, price_before_discount }) => ({ name, modelid, price: price / 100000, priceBeforeDiscount: price_before_discount / 100000, discountPercent: Math.round((price_before_discount - price) * 100 / price_before_discount) })),
+                    imageUrls: [...productFullInfoFromEcommerce.images.map(image => `${shopeeImageUrl}/${image}`)],
+                    addOnDealId: productFullInfoFromEcommerce.add_on_deal_info && productFullInfoFromEcommerce.add_on_deal_info.add_on_deal_id
                 }
             },
             { new: true });
@@ -266,6 +270,20 @@ const saveDiscountCodeToAccountEcommerce = async ({ voucherCode, voucherPromotio
     }
 };
 
+const saveProductToAccountEcommerce = async ({ itemid, modelid, shopid, cookie }) => {
+    try {
+        const result = await saveProduct({ itemid, modelid, shopid, cookie });
+
+        if (result.error) {
+            throw new CustomError("Thêm vào giỏ hàng thất bại!", statusCodes.EXPECTATION_FAILED);
+        }
+
+        return { message: "Thêm vào giỏ hàng thành công!" };
+    } catch (e) {
+        return { error: e };
+    }
+};
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
@@ -273,5 +291,6 @@ module.exports = {
     getProductDetailFromEcommerce,
     searchProductByKeywordFromEcommerce,
     logInAccountEcommerce,
-    saveDiscountCodeToAccountEcommerce
+    saveDiscountCodeToAccountEcommerce,
+    saveProductToAccountEcommerce
 };
