@@ -3,6 +3,7 @@ const TikiServices = require("../services/tiki.services");
 const ShopeeServices = require("../services/shopee.services");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const { getUserInfo } = require("../apis/shopee");
 
 const getCarts = async ({ user }) => {
     try {
@@ -33,9 +34,9 @@ const getCarts = async ({ user }) => {
             throw new CustomError("Bạn chưa nhập tài khoản tiki!", statusCodes.BAD_REQUEST);
         }
 
-        // if (!user.shopeeAccount.username && !user.shopeeAccount.password) {
-        //     throw new CustomError("Bạn chưa nhập tài khoản shopee!", statusCodes.BAD_REQUEST);
-        // }
+        if (!user.shopeeAccount.username && !user.shopeeAccount.password) {
+            throw new CustomError("Bạn chưa nhập tài khoản shopee!", statusCodes.BAD_REQUEST);
+        }
 
         if (!user.tikiAccount.auth ||
             user.tikiAccount.auth && !user.tikiAccount.auth.token ||
@@ -47,25 +48,25 @@ const getCarts = async ({ user }) => {
             }
         }
 
-        // if (!user.shopeeAccount.auth ||
-        //     user.shopeeAccount.auth && !user.shopeeAccount.auth.cookie) {
-        //     const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+        if (!user.shopeeAccount.auth ||
+            user.shopeeAccount.auth && !user.shopeeAccount.auth.cookie) {
+            const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
 
-        //     if (error) {
-        //         throw error;
-        //     }
-        // }
-        // else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
-        //     const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
+            if (error) {
+                throw error;
+            }
+        }
+        else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
+            const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
 
-        //     if (isCookieExpired) {
-        //         const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+            if (isCookieExpired) {
+                const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
 
-        //         if (error) {
-        //             throw error;
-        //         }
-        //     }
-        // }
+                if (error) {
+                    throw error;
+                }
+            }
+        }
 
         const userLoggedIn = await User.findOne({ _id: user._id });
 
@@ -74,15 +75,23 @@ const getCarts = async ({ user }) => {
             await Product.remove({ _id: { $in: tikiCart.productIds } });
         }
 
+        if (shopeeCart.productIds.length > 0) {
+            await Product.remove({ _id: { $in: shopeeCart.productIds } });
+        }
+
         // Get new products from carts
         const tikiCartProducts = await TikiServices.getProductFromCartEcommerce({ xAccessToken: userLoggedIn.tikiAccount.auth.token });
         tikiCart.productIds = tikiCartProducts.map(({ _id }) => _id);
         await tikiCart.save();
 
-        tikiCart = await Cart.findOne({ userId: user._id, ecommerce: "TIKI" }).populate("productIds");
-        shopeeCart = await Cart.findOne({ userId: user._id, ecommerce: "SHOPEE" });
+        const shopeeCartProducts = await ShopeeServices.getProductFromCartEcommerce({ cookie: userLoggedIn.shopeeAccount.auth.cookie });
+        shopeeCart.productIds = shopeeCartProducts.map(({ _id }) => _id);
+        await shopeeCart.save();
 
-        return { tikiCart };
+        tikiCart = await Cart.findOne({ userId: user._id, ecommerce: "TIKI" }).populate("productIds");
+        shopeeCart = await Cart.findOne({ userId: user._id, ecommerce: "SHOPEE" }).populate("productIds");
+
+        return { carts: [tikiCart, shopeeCart] };
     } catch (e) {
         return { error: e };
     }

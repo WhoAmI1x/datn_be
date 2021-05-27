@@ -11,7 +11,8 @@ const {
     shopeeSaveDiscountCodeBaseApi,
     shopeeLogInBaseApi,
     shopeeGetUserInfoBaseApi,
-    shopeeCartBaseApi
+    shopeeCartBaseApi,
+    shopeeProductCartBaseApi
 } = require("../../utils/constants");
 
 const getShopIds = async (categoryId) => {
@@ -290,6 +291,34 @@ const saveProduct = async ({ itemid, modelid, shopid, cookie }) => {
     return res.data;
 };
 
+const getProductsFromCart = async ({ cookie }) => {
+    const dataGetProduct = {
+        pre_selected_item_list: []
+    };
+
+    const res = await axios({
+        method: "POST",
+        url: `${shopeeProductCartBaseApi}`,
+        headers: {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+            "x-api-source": "pc",
+            "content-type": "application/json",
+            "x-shopee-language": "vi",
+            "x-requested-with": "XMLHttpRequest",
+            referer: "https://shopee.vn/cart",
+            "if-none-match-": `55b03-${md5(`55b03${md5(JSON.stringify(dataGetProduct))}55b03`)}`,
+            cookie: `${cookie}`
+        },
+    });
+
+    const shop_orders = res.data && res.data.data && res.data.data.shop_orders;
+
+    if (shop_orders && shop_orders.length > 0) {
+        return shop_orders.map(({ items }) => items[0]);
+    }
+
+    return [];
+};
 
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
@@ -301,5 +330,6 @@ module.exports = {
     logInToGetAuthInfo,
     saveVoucher,
     getUserInfo,
-    saveProduct
+    saveProduct,
+    getProductsFromCart
 };

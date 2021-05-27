@@ -19,7 +19,8 @@ const {
     searchProductByKeyword,
     logInToGetAuthInfo,
     saveVoucher,
-    saveProduct
+    saveProduct,
+    getProductsFromCart
 } = require("../apis/shopee");
 const CustomError = require("../errors/CustomError");
 const statusCodes = require("../errors/statusCodes");
@@ -284,6 +285,35 @@ const saveProductToAccountEcommerce = async ({ itemid, modelid, shopid, cookie }
     }
 };
 
+const getProductFromCartEcommerce = async ({ cookie }) => {
+    try {
+        let shopeeCartProducts = await getProductsFromCart({ cookie });
+
+        if (shopeeCartProducts.length > 0) {
+            const markTime = Date.now();
+
+            const productsMapped = shopeeCartProducts.map(pMapped => ({
+                productUrl: `https://shopee.vn/${getProductUrl(pMapped.name, pMapped.shopid, pMapped.itemid)}`,
+                imageUrls: [`${shopeeImageUrl}/${pMapped.image}`],
+                name: pMapped.name,
+                price: pMapped.price / 100000,
+                priceBeforeDiscount: pMapped.price_before_discount / 100000,
+                quantity: pMapped.quantity,
+                discountPercent: Math.round((pMapped.price_before_discount - pMapped.price) * 100 / pMapped.price_before_discount),
+                ecommerce: "SHOPEE",
+                markTime
+            }));
+
+            await Product.insertMany(productsMapped);
+            shopeeCartProducts = await Product.find({ markTime });
+        }
+
+        return shopeeCartProducts;
+    } catch (e) {
+        return { error: e };
+    }
+}
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
@@ -292,5 +322,6 @@ module.exports = {
     searchProductByKeywordFromEcommerce,
     logInAccountEcommerce,
     saveDiscountCodeToAccountEcommerce,
-    saveProductToAccountEcommerce
+    saveProductToAccountEcommerce,
+    getProductFromCartEcommerce
 };
