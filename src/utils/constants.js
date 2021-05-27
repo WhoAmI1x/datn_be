@@ -6,6 +6,7 @@ module.exports = {
     tikiSaveDiscountCodeBaseApi: "https://api.tiki.vn/applecat/v1/coupon/customer/save",
     tikiRefreshTokenBaseApi: "https://tiki.vn/api/v2/tokens",
     tikiCartBaseApi: "https://tiki.vn/api/v2/carts/mine/items",
+    tikiProductCartBaseApi: "https://tiki.vn/api/v2/carts/mine",
 
     shopeeDiscountCodeBaseApiUrl: "https://shopee.vn/api/v2/voucher_wallet/get_shop_vouchers_by_shopid",
     shopeeProductSaleBaseApiUrl: "https://shopee.vn/api/v2/flash_sale",

@@ -137,17 +137,17 @@ const addProductToCart = async ({ user, productId, modelId }) => {
                     throw error;
                 }
             }
-            // else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
-            //     const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
+            else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
+                const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
 
-            //     if (isCookieExpired) {
-            //         const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+                if (isCookieExpired) {
+                    const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
 
-            //         if (error) {
-            //             throw error;
-            //         }
-            //     }
-            // }
+                    if (error) {
+                        throw error;
+                    }
+                }
+            }
 
             const userLoggedIn = await User.findOne({ _id: user._id });
 

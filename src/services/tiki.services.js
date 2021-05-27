@@ -17,7 +17,8 @@ const {
     getProductsDetailSearched,
     logInToGetAuthInfo,
     saveCoupon,
-    saveProduct
+    saveProduct,
+    getProductsFromCart
 } = require("../apis/tiki");
 
 const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }) => {
@@ -283,6 +284,35 @@ const saveProductToAccountEcommerce = async ({ productId, xAccessToken }) => {
     }
 };
 
+const getProductFromCartEcommerce = async ({ xAccessToken }) => {
+    try {
+        let tikiCartProducts = await getProductsFromCart({ xAccessToken });
+
+        if (tikiCartProducts.length > 0) {
+            const markTime = Date.now();
+
+            const productsMapped = tikiCartProducts.map(pMapped => ({
+                productUrl: `${pMapped.product_url}`,
+                imageUrls: [pMapped.thumbnail_url],
+                name: pMapped.product_name,
+                price: pMapped.price,
+                priceBeforeDiscount: pMapped.list_price,
+                quantity: pMapped.qty,
+                discountPercent: Math.round((pMapped.list_price - pMapped.price) * 100 / pMapped.list_price),
+                ecommerce: "TIKI",
+                markTime
+            }));
+
+            await Product.insertMany(productsMapped);
+            tikiCartProducts = await Product.find({ markTime });
+        }
+
+        return tikiCartProducts;
+    } catch (e) {
+        return { error: e };
+    }
+}
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getTodaySaleProductSchedulesFromEcommerce,
@@ -292,5 +322,6 @@ module.exports = {
     getProductDetailSearchedFromEcommerce,
     logInAccountEcommerce,
     saveDiscountCodeToAccountEcommerce,
-    saveProductToAccountEcommerce
+    saveProductToAccountEcommerce,
+    getProductFromCartEcommerce
 };
