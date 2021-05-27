@@ -49,12 +49,13 @@ const deletePersonalDiscountCode = async ({ query: { personalDiscountCodeId } })
 
 const updatePersonalDiscountCode = async ({ files, body, query: { personalDiscountCodeId } }) => {
     try {
+        let imageUrls = [...body.oldImageUrls];
+
         if (files.length > 0) {
-            const imageUrls = files.map(file => file.destination.replace("./src/assets", "") + `/${file.filename}`);
-            body = Object.assign(body, { imageUrls });
-        } else {
-            delete body["imageUrls"];
+            imageUrls = [...imageUrls, ...files.map(file => file.destination.replace("./src/assets", "") + `/${file.filename}`)];
         }
+        delete body['oldImageUrls'];
+        body = Object.assign(body, { imageUrls });
 
         Object.keys(body).forEach(key => body[key] === 'undefined' && delete body[key]);
 

@@ -23,7 +23,7 @@ const StatisticRouter = require("./routers/statistic.router");
 const PersonalDiscountCodeRouter = require("./routers/personalDiscountCode.router");
 
 app.use(express.static(path.join(__dirname, "./assets")));
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(camelcase());
