@@ -20,7 +20,7 @@ const getFlashSaleProductSchedulesFromEcommerce = async (req, res) => {
 const getProductsByCategoryFromEcommerce = async (req, res) => {
     const { error, products, message } = await ShopeeServices.getProductsByCategoryFromEcommerce(req);
     if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+        throw error;
     }
     res.status(statusCodes.OK).send({ products, message });
 };

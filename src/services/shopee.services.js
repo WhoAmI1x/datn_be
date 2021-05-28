@@ -277,12 +277,12 @@ const saveProductToAccountEcommerce = async ({ itemid, modelid, shopid, cookie }
         const result = await saveProduct({ itemid, modelid, shopid, cookie });
 
         if (result.error) {
-            throw new CustomError("Thêm vào giỏ hàng thất bại!", statusCodes.EXPECTATION_FAILED);
+            throw new CustomError(result.error_msg || "Thêm vào giỏ hàng thất bại!", statusCodes.EXPECTATION_FAILED);
         }
 
         return { message: "Thêm vào giỏ hàng thành công!" };
     } catch (e) {
-        return { error: e };
+        throw e;
     }
 };
 
@@ -328,9 +328,10 @@ const getVoucherSavedFromEcommerce = async ({ cookie, csrfToken }) => {
                     expires: vMapped.end_time * 1000,
                     code: vMapped.voucher_code,
                     imageUrl: vMapped.icon_hash ? `${shopeeImageUrl}/${vMapped.icon_hash}` : "/images/voucher_shopee_image_default.png",
-                    title: vMapped.title,
+                    title: vMapped.title || getDiscountCodeShopeeTitle(vMapped),
                     mainId: vMapped.promotionid,
                     shopeeSignature: vMapped.signature,
+                    description: vMapped.icon_text,
                     markTime
                 })
             });

@@ -118,11 +118,6 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
 };
 
 const getDiscountCodeSaved = async ({ user }) => {
-    const UserWithDiscountCodeSaved = await User.findOne({ _id: user._id }).populate("discountCodeIds");
-
-    return { discountCodesSaved: UserWithDiscountCodeSaved.discountCodeIds };
-
-
     try {
         // Check login
         if (!user.tikiAccount.username && !user.tikiAccount.password) {

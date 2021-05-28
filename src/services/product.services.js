@@ -96,7 +96,7 @@ const addProductToCart = async ({ user, productId, modelId }) => {
     try {
         const product = await Product.findOne({ _id: productId }).populate("categoryId");
 
-        if (product.ecommerce === "TIKI" || product.categoryId.ecommerce === "TIKI") {
+        if (product.ecommerce === "TIKI" || product.categoryId && product.categoryId.ecommerce === "TIKI") {
             if (!user.tikiAccount.username && !user.tikiAccount.password) {
                 throw new CustomError("Bạn chưa nhập tài khoản tiki!", statusCodes.BAD_REQUEST);
             }
