@@ -34,7 +34,8 @@ const discountCodeSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'User'
         }
-    ]
+    ],
+    markTime: { type: Number }
 });
 
 module.exports = models.DiscountCode || model('DiscountCode', discountCodeSchema);

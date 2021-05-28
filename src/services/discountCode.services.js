@@ -13,7 +13,7 @@ const getDiscountCodesByCategory = async ({ query: { categoryId } }) => {
 
         return { discountCodes };
     } catch (e) {
-        return { error: e };
+        throw e;
     }
 };
 
@@ -28,7 +28,7 @@ const deleteDiscountCodeById = async ({ query: { discountCodeId } }) => {
 
         return { error: "Xóa mã thất bại!" };
     } catch (e) {
-        return { error: e };
+        throw e;
     }
 };
 
@@ -113,7 +113,67 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
             return { message: result.message };
         }
     } catch (e) {
-        return { error: e };
+        throw e;
+    }
+};
+
+const getDiscountCodeSaved = async ({ user }) => {
+    try {
+        // Check login
+        if (!user.tikiAccount.username && !user.tikiAccount.password) {
+            throw new CustomError("Bạn chưa nhập tài khoản tiki!", statusCodes.BAD_REQUEST);
+        }
+
+        if (!user.shopeeAccount.username && !user.shopeeAccount.password) {
+            throw new CustomError("Bạn chưa nhập tài khoản shopee!", statusCodes.BAD_REQUEST);
+        }
+
+        if (!user.tikiAccount.auth ||
+            user.tikiAccount.auth && !user.tikiAccount.auth.token ||
+            user.tikiAccount.auth && user.tikiAccount.auth.token && user.tikiAccount.auth.expires_at <= Date.now()) {
+            const { error, message } = await TikiServices.logInAccountEcommerce(user);
+
+            if (error) {
+                throw error;
+            }
+        }
+
+        if (!user.shopeeAccount.auth ||
+            user.shopeeAccount.auth && !user.shopeeAccount.auth.cookie) {
+            const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+
+            if (error) {
+                throw error;
+            }
+        }
+        else if (user.shopeeAccount.auth && user.shopeeAccount.auth.cookie) {
+            const isCookieExpired = await getUserInfo({ cookie: user.shopeeAccount.auth.cookie });
+
+            if (isCookieExpired) {
+                const { error, message } = await ShopeeServices.logInAccountEcommerce(user);
+
+                if (error) {
+                    throw error;
+                }
+            }
+        }
+
+        const userLoggedIn = await User.findOne({ _id: user._id });
+
+        // Clear old discount codes
+        if (user.discountCodeIds.length > 0) {
+            user.discountCodeIds = [];
+        }
+
+        // Get new discount codes from ecommerce
+        const tikiDiscountCodes = await TikiServices.getCouponSavedFromEcommerce({ xAccessToken: userLoggedIn.tikiAccount.auth.token });
+
+        user.discountCodeIds = [...tikiDiscountCodes.map(({ _id }) => _id)];
+        await user.save();
+
+        return { discountCodesSaved: [...tikiDiscountCodes] };
+    } catch (e) {
+        throw e;
     }
 };
 
@@ -121,4 +181,5 @@ module.exports = {
     getDiscountCodesByCategory,
     deleteDiscountCodeById,
     saveDiscountCode,
+    getDiscountCodeSaved
 };

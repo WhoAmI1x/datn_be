@@ -11,4 +11,6 @@ router.delete("/delete-discount-code-by-id", auth, asyncWrap(DiscountCodeControl
 
 router.post("/save-discount-code", auth, asyncWrap(DiscountCodeControllers.saveDiscountCode));
 
+router.get("/get-discount-code-saved", auth, asyncWrap(DiscountCodeControllers.getDiscountCodeSaved));
+
 module.exports = router;

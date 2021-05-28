@@ -7,7 +7,8 @@ const {
     tikiLogInBaseApi,
     tikiSaveDiscountCodeBaseApi,
     tikiCartBaseApi,
-    tikiProductCartBaseApi
+    tikiProductCartBaseApi,
+    tikiCouponSavedBaseApi
 } = require("../../utils/constants");
 
 const getDiscountCodeWithDetectFieldId = async (url) => {
@@ -244,6 +245,26 @@ const getProductsFromCart = async ({ xAccessToken }) => {
     return res.data && res.data.items;
 };
 
+const getCouponSaved = async ({ xAccessToken }) => {
+    const res = await axios({
+        method: "GET",
+        url: `${tikiCouponSavedBaseApi}`,
+        headers: {
+            "user-agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36`,
+            referer: "https://tiki.vn/checkout/cart?src=header_cart",
+            "x-access-token": xAccessToken
+        },
+        params: {
+            page: 1,
+            page_size: 20,
+            status: "active",
+            type: "all"
+        }
+    });
+
+    return res.data && res.data.data && res.data.data.results || [];
+}
+
 module.exports = {
     getDiscountCodeWithDetectFieldId,
     getDiscountCodePlatformShippingOrTopCoupons,
@@ -256,5 +277,6 @@ module.exports = {
     logInToGetAuthInfo,
     saveCoupon,
     saveProduct,
-    getProductsFromCart
+    getProductsFromCart,
+    getCouponSaved
 };

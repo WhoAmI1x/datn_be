@@ -3,7 +3,7 @@ const statusCodes = require("../errors/statusCodes");
 const errorHandler = () => (err, req, res, next) => {
   let {
     statusCode = 500,
-    message = "Something went wrong. Please try again!",
+    message = "Lỗi server!",
   } = err;
 
   switch (statusCode) {
