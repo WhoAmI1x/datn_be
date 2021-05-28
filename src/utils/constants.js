@@ -18,5 +18,6 @@ module.exports = {
     shopeeLogInBaseApi: "https://shopee.vn/api/v2/authentication/login",
     shopeeGetUserInfoBaseApi: "https://shopee.vn/api/v2/user/profile/get/",
     shopeeCartBaseApi: "https://shopee.vn/api/v4/cart/add_to_cart",
-    shopeeProductCartBaseApi: "https://shopee.vn/api/v4/cart/get"
+    shopeeProductCartBaseApi: "https://shopee.vn/api/v4/cart/get",
+    shopeeVoucherSavedBaseApi: "https://shopee.vn/api/v2/voucher_wallet/get_user_voucher_list"
 }

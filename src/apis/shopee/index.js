@@ -12,7 +12,8 @@ const {
     shopeeLogInBaseApi,
     shopeeGetUserInfoBaseApi,
     shopeeCartBaseApi,
-    shopeeProductCartBaseApi
+    shopeeProductCartBaseApi,
+    shopeeVoucherSavedBaseApi
 } = require("../../utils/constants");
 
 const getShopIds = async (categoryId) => {
@@ -320,6 +321,36 @@ const getProductsFromCart = async ({ cookie }) => {
     return [];
 };
 
+const getVoucherSaved = async ({ cookie, csrfToken }) => {
+    const dataGetVoucher = {
+        addition: [
+            "voucher_microsite_link"
+        ],
+        cursor: "",
+        limit: 50,
+        version: 2,
+        voucher_sort_flag: 1,
+        voucher_status: 1
+    };
+
+    const res = await axios({
+        method: "POST",
+        url: `${shopeeVoucherSavedBaseApi}`,
+        headers: {
+            cookie: `csrftoken=${csrfToken}; ${cookie}`,
+            "if-none-match-": `55b03-${md5(`55b03${md5(JSON.stringify(dataGetVoucher))}55b03`)}`,
+            referer: "https://shopee.vn/user/voucher-wallet/",
+            "x-api-source": "pc",
+            "x-csrftoken": `${csrfToken}`,
+            "user-agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36`,
+
+        },
+        data: dataGetVoucher
+    });
+
+    return res.data && res.data.data && res.data.data.user_voucher_list || [];
+}
+
 module.exports = {
     getDiscountCodeByShopIdAndCategory,
     getFlashSaleProductSchedules,
@@ -331,5 +362,6 @@ module.exports = {
     saveVoucher,
     getUserInfo,
     saveProduct,
-    getProductsFromCart
+    getProductsFromCart,
+    getVoucherSaved
 };

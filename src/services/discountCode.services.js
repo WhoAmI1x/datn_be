@@ -118,6 +118,11 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
 };
 
 const getDiscountCodeSaved = async ({ user }) => {
+    const UserWithDiscountCodeSaved = await User.findOne({ _id: user._id }).populate("discountCodeIds");
+
+    return { discountCodesSaved: UserWithDiscountCodeSaved.discountCodeIds };
+
+
     try {
         // Check login
         if (!user.tikiAccount.username && !user.tikiAccount.password) {
@@ -167,11 +172,15 @@ const getDiscountCodeSaved = async ({ user }) => {
 
         // Get new discount codes from ecommerce
         const tikiDiscountCodes = await TikiServices.getCouponSavedFromEcommerce({ xAccessToken: userLoggedIn.tikiAccount.auth.token });
+        const shopeeDiscountCodes = await ShopeeServices.getVoucherSavedFromEcommerce({
+            csrfToken: userLoggedIn.shopeeAccount.auth.csrfToken,
+            cookie: userLoggedIn.shopeeAccount.auth.cookie
+        });
 
-        user.discountCodeIds = [...tikiDiscountCodes.map(({ _id }) => _id)];
+        user.discountCodeIds = [...tikiDiscountCodes.map(({ _id }) => _id), ...shopeeDiscountCodes.map(({ _id }) => _id)];
         await user.save();
 
-        return { discountCodesSaved: [...tikiDiscountCodes] };
+        return { discountCodesSaved: [...tikiDiscountCodes, ...shopeeDiscountCodes] };
     } catch (e) {
         throw e;
     }

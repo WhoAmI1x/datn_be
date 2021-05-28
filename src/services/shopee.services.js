@@ -20,7 +20,8 @@ const {
     logInToGetAuthInfo,
     saveVoucher,
     saveProduct,
-    getProductsFromCart
+    getProductsFromCart,
+    getVoucherSaved
 } = require("../apis/shopee");
 const CustomError = require("../errors/CustomError");
 const statusCodes = require("../errors/statusCodes");
@@ -314,6 +315,36 @@ const getProductFromCartEcommerce = async ({ cookie }) => {
     }
 }
 
+const getVoucherSavedFromEcommerce = async ({ cookie, csrfToken }) => {
+    try {
+        let shopeeVouchersSaved = await getVoucherSaved({ cookie, csrfToken });
+
+        if (shopeeVouchersSaved.length > 0) {
+            const markTime = Date.now();
+
+            const vouchersMapped = shopeeVouchersSaved.map(vMapped => {
+                return ({
+                    ecommerce: "SHOPEE",
+                    expires: vMapped.end_time * 1000,
+                    code: vMapped.voucher_code,
+                    imageUrl: vMapped.icon_hash ? `${shopeeImageUrl}/${vMapped.icon_hash}` : "/images/voucher_shopee_image_default.png",
+                    title: vMapped.title,
+                    mainId: vMapped.promotionid,
+                    shopeeSignature: vMapped.signature,
+                    markTime
+                })
+            });
+
+            await DiscountCode.insertMany(vouchersMapped);
+            shopeeVouchersSaved = await DiscountCode.find({ markTime });
+        }
+
+        return shopeeVouchersSaved;
+    } catch (e) {
+        throw e;
+    }
+}
+
 module.exports = {
     getDiscountCodesByCategoryFromEcommerce,
     getFlashSaleProductSchedulesFromEcommerce,
@@ -323,5 +354,6 @@ module.exports = {
     logInAccountEcommerce,
     saveDiscountCodeToAccountEcommerce,
     saveProductToAccountEcommerce,
-    getProductFromCartEcommerce
+    getProductFromCartEcommerce,
+    getVoucherSavedFromEcommerce
 };
