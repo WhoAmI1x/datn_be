@@ -36,7 +36,7 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
         if (category.detectField === "id") {
             const url = await getDiscountCodeApiUrlFromBrowser({ key: category.detectField, value: category.detectValue });
             if (!url) {
-                return { error: `Url get discount codes of ${category.name} not found!` };
+                return { error: `Url của danh mục ${category.name} không tìm thấy!` };
             }
 
             discountCodes = await getDiscountCodeWithDetectFieldId(url);
@@ -52,7 +52,7 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
         if (discountCodes) {
             const discountCodesToSaveToDb = discountCodes.map(dc => new DiscountCode({
                 ecommerce: "TIKI",
-                expires: dc.expired_at * 1000,
+                expires: dc.status === "inactive" ? Date.now() : dc.expired_at * 1000,
                 code: dc.coupon_code,
                 mainId: dc.coupon_id,
                 tikiRuleId: dc.rule_id,

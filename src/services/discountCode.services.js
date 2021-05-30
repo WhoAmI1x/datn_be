@@ -60,7 +60,7 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
             });
 
             if (result.error) {
-                throw error;
+                throw result.error;
             }
 
             user.discountCodeIds.push(discountCode._id);
@@ -104,7 +104,7 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
             });
 
             if (result.error) {
-                throw error;
+                throw result.error;
             }
 
             user.discountCodeIds.push(discountCode._id);
@@ -113,7 +113,7 @@ const saveDiscountCode = async ({ user, discountCodeId }) => {
             return { message: result.message };
         }
     } catch (e) {
-        throw e;
+        return { error: e };
     }
 };
 
