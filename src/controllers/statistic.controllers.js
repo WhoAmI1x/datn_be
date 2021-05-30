@@ -4,7 +4,7 @@ const statusCodes = require("../errors/statusCodes");
 const getStatistic = async (req, res) => {
     const { error, statistic } = await StatisticServices.getStatistic();
     if (error) {
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ error });
+        throw error;
     }
     res.status(statusCodes.OK).send({ statistic });
 };

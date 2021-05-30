@@ -19,25 +19,25 @@ const getStatistic = async () => {
             if (ecommerce === "TIKI" && type === "DISCOUNT_CODE") {
                 tikiDiscountCodesByCategories.push({
                     categoryName: name,
-                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId.toString() === _id.toString()).length
+                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId && (dc.categoryId.toString() === _id.toString())).length
                 });
             }
             else if (ecommerce === "SHOPEE" && type === "DISCOUNT_CODE") {
                 shopeeDiscountCodesByCategories.push({
                     categoryName: name,
-                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId.toString() === _id.toString()).length
+                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId && (dc.categoryId.toString() === _id.toString())).length
                 });
             }
             else if (ecommerce === "TIKI" && type === "PRODUCT") {
                 tikiProductsByCategories.push({
                     categoryName: name,
-                    productQuantity: products.filter(p => p.categoryId.toString() === _id.toString()).length
+                    productQuantity: products.filter(p => p.categoryId && (p.categoryId.toString() === _id.toString())).length
                 });
             }
             else if (ecommerce === "SHOPEE" && type === "PRODUCT") {
                 shopeeProductsByCategories.push({
                     categoryName: name,
-                    productQuantity: products.filter(p => p.categoryId.toString() === _id.toString()).length
+                    productQuantity: products.filter(p => p.categoryId && (p.categoryId.toString() === _id.toString())).length
                 });
             }
         });
@@ -47,7 +47,7 @@ const getStatistic = async () => {
                 statisticTotals: [
                     {
                         label: "Mã giảm giá",
-                        quantity: discountCodes.length
+                        quantity: discountCodes.filter(dc => dc.categoryId).length
                     },
                     {
                         label: "Sản phẩm",
