@@ -70,7 +70,7 @@ const getCarts = async ({ user }) => {
 
         const userLoggedIn = await User.findOne({ _id: user._id });
 
-        // Clear old cart
+        // Clear products of old cart
         if (tikiCart.productIds.length > 0) {
             await Product.remove({ _id: { $in: tikiCart.productIds } });
         }
