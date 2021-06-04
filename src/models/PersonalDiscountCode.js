@@ -5,6 +5,7 @@ const personalDiscountCodeSchema = new Schema({
     imageUrls: [String],
     expires: { type: Number },
     description: { type: String },
+    isUsed: { type: Boolean, default: false },
     userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 

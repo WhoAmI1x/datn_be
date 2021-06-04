@@ -47,25 +47,31 @@ const deletePersonalDiscountCode = async ({ query: { personalDiscountCodeId } })
     }
 };
 
-const updatePersonalDiscountCode = async ({ files, body, query: { personalDiscountCodeId } }) => {
+const updatePersonalDiscountCode = async ({ user, files, body, query: { personalDiscountCodeId } }) => {
     try {
-        let imageUrls = [...body.oldImageUrls];
+        let imageUrls = [];
 
-        if (files.length > 0) {
-            imageUrls = [...imageUrls, ...files.map(file => file.destination.replace("./src/assets", "") + `/${file.filename}`)];
-        }
-        delete body['oldImageUrls'];
-        body = Object.assign(body, { imageUrls });
+        if (body.oldImageUrls) {
+            imageUrls = [...body.oldImageUrls];
 
-        Object.keys(body).forEach(key => body[key] === 'undefined' && delete body[key]);
-
-        const personalDiscountCodeUpdated = await PersonalDiscountCode.findOneAndUpdate({ _id: personalDiscountCodeId }, { $set: body }, { rawResult: true });
-
-        if (personalDiscountCodeUpdated.ok !== 1) {
-            throw new CustomError("Cập nhật mã thất bại!", statusCodes.EXPECTATION_FAILED);
+            if (files && files.length > 0) {
+                imageUrls = [...imageUrls, ...files.map(file => file.destination.replace("./src/assets", "") + `/${file.filename}`)];
+            }
+            delete body['oldImageUrls'];
+            body = Object.assign(body, { imageUrls });
         }
 
-        const personalDiscountCodes = await PersonalDiscountCode.find({});
+        if (Object.keys(body).length > 0) {
+            Object.keys(body).forEach(key => body[key] === 'undefined' && delete body[key]);
+
+            const personalDiscountCodeUpdated = await PersonalDiscountCode.findOneAndUpdate({ _id: personalDiscountCodeId }, { $set: body }, { rawResult: true });
+
+            if (personalDiscountCodeUpdated.ok !== 1) {
+                throw new CustomError("Cập nhật mã thất bại!", statusCodes.EXPECTATION_FAILED);
+            }
+        }
+
+        const personalDiscountCodes = await PersonalDiscountCode.find({ userId: user._id });
         return { personalDiscountCodes };
     } catch (e) {
         return { error: e };
