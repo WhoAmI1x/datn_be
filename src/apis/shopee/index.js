@@ -3,6 +3,7 @@ const randomString = require("../../utils/randomString");
 const md5 = require("md5");
 const { SHA256, MD5 } = require("crypto-js");
 const isPhoneNumber = require("../../utils/isPhoneNumber");
+const textToSlug = require("../../utils/textToSlug");
 const {
     shopeeSearchBaseApiUrl,
     shopeeDiscountCodeBaseApiUrl,
@@ -143,7 +144,7 @@ const searchProductByKeyword = async (keyword) => {
             "sec-fetch-site": "same-origin",
             "sec-fetch-mode": "cors",
             "sec-fetch-dest": "empty",
-            referer: `https://shopee.vn/search?keyword=${keyword}`,
+            referer: `https://shopee.vn/search?keyword=${textToSlug(keyword)}`,
             "accept-language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5,de;q=0.4,ko;q=0.3,und;q=0.2,it;q=0.1,zh-CN;q=0.1,zh-TW;q=0.1,zh;q=0.1,ru;q=0.1,la;q=0.1,pt;q=0.1,pl;q=0.1,es;q=0.1,ja;q=0.1",
         },
         params: {

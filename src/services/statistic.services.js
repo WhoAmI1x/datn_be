@@ -5,8 +5,8 @@ const Category = require("../models/Category");
 
 const getStatistic = async () => {
     try {
-        const discountCodes = await DiscountCode.find({ expires: { $gt: Date.now() } }).exec();
-        const products = await Product.find({ endTime: { $gt: Date.now() } }).exec();
+        const discountCodes = await DiscountCode.find({ expires: { $gt: Date.now() }, categoryId: { $exists: true } }).exec();
+        const products = await Product.find({ endTime: { $gt: Date.now() }, categoryId: { $exists: true } }).exec();
         const users = await User.countDocuments({ role: "USER" });
         const categories = await Category.find({}).exec();
 
@@ -19,25 +19,25 @@ const getStatistic = async () => {
             if (ecommerce === "TIKI" && type === "DISCOUNT_CODE") {
                 tikiDiscountCodesByCategories.push({
                     categoryName: name,
-                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId && (dc.categoryId.toString() === _id.toString())).length
+                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId.toString() === _id.toString()).length
                 });
             }
             else if (ecommerce === "SHOPEE" && type === "DISCOUNT_CODE") {
                 shopeeDiscountCodesByCategories.push({
                     categoryName: name,
-                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId && (dc.categoryId.toString() === _id.toString())).length
+                    discountCodeQuantity: discountCodes.filter(dc => dc.categoryId.toString() === _id.toString()).length
                 });
             }
             else if (ecommerce === "TIKI" && type === "PRODUCT") {
                 tikiProductsByCategories.push({
                     categoryName: name,
-                    productQuantity: products.filter(p => p.categoryId && (p.categoryId.toString() === _id.toString())).length
+                    productQuantity: products.filter(p => p.categoryId.toString() === _id.toString()).length
                 });
             }
             else if (ecommerce === "SHOPEE" && type === "PRODUCT") {
                 shopeeProductsByCategories.push({
                     categoryName: name,
-                    productQuantity: products.filter(p => p.categoryId && (p.categoryId.toString() === _id.toString())).length
+                    productQuantity: products.filter(p => p.categoryId.toString() === _id.toString()).length
                 });
             }
         });

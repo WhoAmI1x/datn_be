@@ -50,6 +50,7 @@ const getDiscountCodesByCategoryFromEcommerce = async ({ query: { categoryId } }
                 categoryId: category._id,
             }));
 
+            await DiscountCode.remove({ categoryId });
             await DiscountCode.insertMany(discountCodesToSaveToDb);
 
             return { discountCodes: discountCodesToSaveToDb };
