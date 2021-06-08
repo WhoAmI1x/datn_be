@@ -23,7 +23,6 @@ const categorySchema = new Schema({
     },
     detectValue: {
         type: String,
-        required: true
     }
 });
 
