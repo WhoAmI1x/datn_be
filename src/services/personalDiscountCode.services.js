@@ -51,13 +51,13 @@ const updatePersonalDiscountCode = async ({ user, files, body, query: { personal
     try {
         let imageUrls = [];
 
-        if (body.oldImageUrls) {
-            imageUrls = [...body.oldImageUrls];
+        if (body.oldImageUrls || files.length > 0) {
+            imageUrls = body.oldImageUrls ? [...body.oldImageUrls] : imageUrls;
 
             if (files && files.length > 0) {
                 imageUrls = [...imageUrls, ...files.map(file => file.destination.replace("./src/assets", "") + `/${file.filename}`)];
             }
-            delete body['oldImageUrls'];
+            body.oldImageUrls && (delete body['oldImageUrls']);
             body = Object.assign(body, { imageUrls });
         }
 
