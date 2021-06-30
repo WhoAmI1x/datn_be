@@ -2,22 +2,35 @@ const { getDateString, getDateStringAndTime } = require("./datetime");
 const moneyFormat = require("./moneyFormat");
 
 const getDiscountCodeShopeeTitle = dc => {
-    let title = `Giảm `;
+    if (dc.coin_percentage) {
+        let title = `Hoàn ${dc.coin_percentage}% xu `;
 
-    if (dc.discount_percentage !== 0) {
-        title += `${dc.discount_percentage}% `;
+        title += `Đơn tối thiểu ${moneyFormat(dc.min_spend / 100000)} `;
+
+        if (dc.discount_cap !== 0) {
+            title += `Giảm tối đa ${moneyFormat(dc.discount_cap / 100000)}`
+        }
+
+        return title;
     }
-    else if (dc.discount_value !== 0) {
-        title += `${moneyFormat(dc.discount_value / 100000)} `;
+    else {
+        let title = `Giảm `;
+
+        if (dc.discount_percentage !== 0) {
+            title += `${dc.discount_percentage}% `;
+        }
+        else if (dc.discount_value !== 0) {
+            title += `${moneyFormat(dc.discount_value / 100000)} `;
+        }
+
+        title += `Đơn tối thiểu ${moneyFormat(dc.min_spend / 100000)} `
+
+        if (dc.discount_cap !== 0) {
+            title += `Giảm tối đa ${moneyFormat(dc.discount_cap / 100000)}`
+        }
+
+        return title;
     }
-
-    title += `Đơn tối thiểu ${moneyFormat(dc.min_spend / 100000)} `
-
-    if (dc.discount_cap !== 0) {
-        title += `Giảm tối đa ${moneyFormat(dc.discount_cap / 100000)}`
-    }
-
-    return title;
 };
 
 const getDiscountCodeShopeeDescription = dc => {

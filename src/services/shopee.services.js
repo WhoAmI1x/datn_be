@@ -328,7 +328,7 @@ const getVoucherSavedFromEcommerce = async ({ cookie, csrfToken }) => {
                     ecommerce: "SHOPEE",
                     expires: vMapped.end_time * 1000,
                     code: vMapped.voucher_code,
-                    imageUrl: vMapped.icon_hash ? `${shopeeImageUrl}/${vMapped.icon_hash}` : "/images/voucher_shopee_image_default.png",
+                    imageUrl: vMapped.icon_hash ? `${shopeeImageUrl}/${vMapped.icon_hash}` : vMapped.reward_type === 2 ? "/images/free_ship.JPG" : "/images/voucher_shopee_image_default.png",
                     title: vMapped.title || getDiscountCodeShopeeTitle(vMapped),
                     mainId: vMapped.promotionid,
                     shopeeSignature: vMapped.signature,
