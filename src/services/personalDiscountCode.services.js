@@ -24,7 +24,7 @@ const createPersonalDiscountCode = async ({ files, user, body }) => {
 
 const getPersonalDiscountCodes = async ({ user }) => {
     try {
-        const personalDiscountCodes = await PersonalDiscountCode.find({});
+        const personalDiscountCodes = await PersonalDiscountCode.find({ userId: user._id });
 
         return { personalDiscountCodes };
     } catch (e) {
